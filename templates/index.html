@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NutriScan AI | Seu Nutricionista Inteligente</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50 font-sans text-gray-800">
+
+    <header class="bg-emerald-600 text-white p-4 shadow-lg">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold tracking-tight"><i class="fas fa-leaf mr-2"></i>NutriScan AI</h1>
+            <button class="bg-yellow-400 text-emerald-900 px-3 py-1 rounded-full text-sm font-bold hover:bg-yellow-300 transition">
+                SEJA PRO
+            </button>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8 max-w-2xl">
+        
+        <section class="mb-8 text-center">
+            <h2 class="text-2xl font-extrabold text-emerald-900">O que temos para hoje?</h2>
+            <p class="text-gray-600">Digite seus ingredientes e deixe a IA cozinhar para você.</p>
+        </section>
+
+        <div class="bg-white rounded-2xl shadow-sm p-6 mb-6 border border-gray-100">
+            <div class="space-y-4">
+                
+                <div>
+                    <label class="block text-sm font-semibold mb-1">Ingredientes na Geladeira:</label>
+                    <textarea id="ingredientes" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none" rows="3" placeholder="Ex: 2 ovos, frango, espinafre, tomate..."></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold mb-1">Seu Objetivo:</label>
+                    <select id="objetivo" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                        <option value="emagrecimento">Emagrecimento</option>
+                        <option value="hipertrofia">Hipertrofia (Ganho de Massa)</option>
+                        <option value="manutencao">Manutenção / Saúde</option>
+                        <option value="performance">Performance Esportiva</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold mb-1">Restrições Alimentares:</label>
+                    <input type="text" id="restricoes" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none" placeholder="Ex: Sem glúten, Vegano, Sem lactose...">
+                </div>
+
+                <button onclick="gerarReceita()" id="btn-gerar" class="w-full bg-emerald-600 text-white font-bold py-4 rounded-xl hover:bg-emerald-700 transition transform active:scale-95 shadow-md">
+                    GERAR RECEITA COM IA
+                </button>
+
+            </div>
+        </div>
+
+        <div id="resultado-area" class="hidden space-y-4">
+            <div class="bg-white rounded-2xl shadow-md p-6 border-l-4 border-emerald-500">
+                <div id="loading" class="text-center py-4 hidden">
+                    <i class="fas fa-circle-notch fa-spin text-emerald-500 text-2xl"></i>
+                    <p class="mt-2 text-sm text-gray-500">Criando sua receita personalizada...</p>
+                </div>
+                <div id="conteudo-receita" class="prose prose-emerald max-w-none">
+                    </div>
+            </div>
+
+            <div class="bg-emerald-900 text-white p-6 rounded-2xl flex items-center justify-between">
+                <div>
+                    <h3 class="font-bold">Gostou da sugestão?</h3>
+                    <p class="text-xs text-emerald-200">Gere um cardápio para a semana toda e receba a lista de compras!</p>
+                </div>
+                <button class="bg-emerald-500 p-2 rounded-lg font-bold text-sm">Ver Plano</button>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        async function gerarReceita() {
+            const area = document.getElementById('resultado-area');
+            const loading = document.getElementById('loading');
+            const conteudo = document.getElementById('conteudo-receita');
+            
+            // UI Feedback
+            area.classList.remove('hidden');
+            loading.classList.remove('hidden');
+            conteudo.innerHTML = "";
+
+            // Mock de chamada para o backend Python (ajustaremos a rota depois)
+            const dados = {
+                ingredientes: document.getElementById('ingredientes').value,
+                objetivo: document.getElementById('objetivo').value,
+                restricoes: document.getElementById('restricoes').value
+            };
+
+            console.log("Enviando dados:", dados);
+
+            // Simulação de resposta (enquanto não conectamos o Python)
+            setTimeout(() => {
+                loading.classList.add('hidden');
+                conteudo.innerHTML = `
+                    <h2 class="text-xl font-bold mb-2 text-emerald-800 text-center">Omelete Fit de Espinafre</h2>
+                    <div class="bg-emerald-50 p-3 rounded-lg mb-4 text-sm">
+                        <strong>📊 Info Nutricional:</strong> 320 Kcal | 25g Proteína | 8g Carbs
+                    </div>
+                    <p class="text-gray-700"><strong>Modo de Preparo:</strong> Refogue o espinafre, bata os ovos com temperos a gosto e despeje na frigideira antiaderente...</p>
+                `;
+            }, 1500);
+        }
+    </script>
+</body>
+</html>
