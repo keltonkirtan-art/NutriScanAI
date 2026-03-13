@@ -6,6 +6,7 @@
     <title>NutriScan AI | Seu Nutricionista Inteligente</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body class="bg-gray-50 font-sans text-gray-800">
 
@@ -63,6 +64,11 @@
                 </div>
                 <div id="conteudo-receita" class="prose prose-emerald max-w-none">
                     </div>
+                <div class="mt-4 flex gap-2">
+                    <button onclick="baixarPDF()" class="flex-1 bg-gray-800 text-white py-2 rounded-lg font-bold text-sm hover:bg-black transition">
+                        <i class="fas fa-file-pdf mr-2"></i> BAIXAR PDF
+                    </button>
+                </div>
             </div>
 
             <div class="bg-emerald-900 text-white p-6 rounded-2xl flex items-center justify-between">
@@ -81,32 +87,57 @@
             const area = document.getElementById('resultado-area');
             const loading = document.getElementById('loading');
             const conteudo = document.getElementById('conteudo-receita');
+            const btn = document.getElementById('btn-gerar');
             
+            // Pegando os valores dos campos
+            const ingredientes = document.getElementById('ingredientes').value;
+            const objetivo = document.getElementById('objetivo').value;
+            const restricoes = document.getElementById('restricoes').value;
+
+            if (!ingredientes) {
+                alert("Por favor, digite os ingredientes que você tem!");
+                return;
+            }
+
             // UI Feedback
             area.classList.remove('hidden');
             loading.classList.remove('hidden');
             conteudo.innerHTML = "";
+            btn.disabled = true; // Evita cliques múltiplos
 
-            // Mock de chamada para o backend Python (ajustaremos a rota depois)
-            const dados = {
-                ingredientes: document.getElementById('ingredientes').value,
-                objetivo: document.getElementById('objetivo').value,
-                restricoes: document.getElementById('restricoes').value
-            };
+            try {
+                const response = await fetch('/gerar-receita', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ingredientes, objetivo, restricoes })
+                });
 
-            console.log("Enviando dados:", dados);
+                const data = await response.json();
 
-            // Simulação de resposta (enquanto não conectamos o Python)
-            setTimeout(() => {
+                if (data.receita) {
+                    // A IA já retorna HTML formatado conforme pedimos no prompt
+                    loading.classList.add('hidden');
+                    conteudo.innerHTML = data.receita;
+                } else {
+                    throw new Error(data.error || "Erro desconhecido");
+                }
+            } catch (error) {
                 loading.classList.add('hidden');
-                conteudo.innerHTML = `
-                    <h2 class="text-xl font-bold mb-2 text-emerald-800 text-center">Omelete Fit de Espinafre</h2>
-                    <div class="bg-emerald-50 p-3 rounded-lg mb-4 text-sm">
-                        <strong>📊 Info Nutricional:</strong> 320 Kcal | 25g Proteína | 8g Carbs
-                    </div>
-                    <p class="text-gray-700"><strong>Modo de Preparo:</strong> Refogue o espinafre, bata os ovos com temperos a gosto e despeje na frigideira antiaderente...</p>
-                `;
-            }, 1500);
+                conteudo.innerHTML = `<p class="text-red-500">Erro ao gerar: ${error.message}</p>`;
+            } finally {
+                btn.disabled = false;
+            }
+        }
+        function baixarPDF() {
+            const elemento = document.getElementById('conteudo-receita');
+            const opt = {
+                margin: 10,
+                filename: 'meu-plano-nutriscan.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(elemento).save();
         }
     </script>
 </body>

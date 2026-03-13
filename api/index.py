@@ -1,18 +1,13 @@
 import os
 from flask import Flask, render_template, request, jsonify
-import google.generativeai as genai
-import os
-api_key = os.getenv("GEMINI_API_KEY")
+from google import genai # Nova biblioteca
+from dotenv import load_dotenv
 
-# Ajuste para o Flask encontrar os templates fora da pasta api
-app = Flask(__name__, 
-            template_folder="../templates", 
-            static_folder="../static")
+load_dotenv()
+app = Flask(__name__, template_folder="../templates", static_folder="../static")
 
-# Configuração da API
-# Dica: Use variáveis de ambiente para segurança
-genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
-model = genai.GenerativeModel('gemini-pro')
+# Configuração do novo Cliente Google GenAI
+client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
 @app.route('/')
 def index():
@@ -26,22 +21,33 @@ def gerar():
         objetivo = dados.get('objetivo')
         restricoes = dados.get('restricoes')
 
+        # Prompt com rigor científico (Biomedicina + Ed. Física)
         prompt = f"""
-        Aja como um nutricionista e chef. 
-        Crie uma receita saudável usando: {ingredientes}.
-        Objetivo do usuário: {objetivo}. 
-        Restrições: {restricoes}.
+        Aja como um Nutricionista Clínico e Especialista em Fisiologia do Exercício.
+        Crie uma solução nutricional para: {ingredientes}.
+        Objetivo: {objetivo}. Restrições: {restricoes}.
         
-        Retorne em HTML formatado:
-        1. Nome da Receita (em <h2>)
-        2. Tabela Nutricional Estimada (Kcal, P, C, G) em uma <div> destacada.
-        3. Modo de preparo passo a passo.
+        Requisitos técnicos da resposta:
+        1. Analise a combinação de aminoácidos (Valor Biológico) para o objetivo de {objetivo}.
+        2. Considere a Carga Glicêmica da refeição.
+        3. Forneça a Tabela Nutricional Estimada detalhada (Kcal, P, C, G).
+        4. Modo de preparo focado em preservar nutrientes.
+        
+        Retorne a resposta EXCLUSIVAMENTE em HTML formatado (use <h2> para títulos, 
+        <div style='background-color: #ecfdf5; padding: 15px; border-radius: 10px; margin: 10px 0;'> para a tabela e <ul> para passos).
         """
         
-        response = model.generate_content(prompt)
+        # Chamada usando o modelo que você já conhece e prefere
+        response = client.models.generate_content(
+            model="gemini-3.1-flash-lite-preview", 
+            contents=prompt
+        )
+        
         return jsonify({"receita": response.text})
     except Exception as e:
+        # Log do erro no terminal para facilitar seu diagnóstico
+        print(f"Erro detalhado: {e}")
         return jsonify({"error": str(e)}), 500
 
-# Necessário para a Vercel reconhecer a aplicação
-app.debug = True
+if __name__ == "__main__":
+    app.run(debug=True, port=5000) # Mudamos de 5000
