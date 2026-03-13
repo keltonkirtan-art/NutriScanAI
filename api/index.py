@@ -14,30 +14,27 @@ def index():
     return render_template('index.html')
 
 @app.route('/gerar-receita', methods=['POST'])
+@app.route('/gerar-receita', methods=['POST'])
 def gerar():
     try:
         dados = request.json
         ingredientes = dados.get('ingredientes')
-        objetivo = dados.get('objetivo')
+        objetivo = dados.get('objetivo').upper()
         restricoes = dados.get('restricoes')
 
-        # Prompt com rigor científico (Biomedicina + Ed. Física)
         prompt = f"""
-        Aja como um Nutricionista Clínico e Especialista em Fisiologia do Exercício.
-        Crie uma solução nutricional para: {ingredientes}.
-        Objetivo: {objetivo}. Restrições: {restricoes}.
+        Aja como um Nutricionista e Designer de UI. 
+        Crie uma receita para: {ingredientes}. Objetivo: {objetivo}.
         
-        Requisitos técnicos da resposta:
-        1. Analise a combinação de aminoácidos (Valor Biológico) para o objetivo de {objetivo}.
-        2. Considere a Carga Glicêmica da refeição.
-        3. Forneça a Tabela Nutricional Estimada detalhada (Kcal, P, C, G).
-        4. Modo de preparo focado em preservar nutrientes.
-        
-        Retorne a resposta EXCLUSIVAMENTE em HTML formatado (use <h2> para títulos, 
-        <div style='background-color: #ecfdf5; padding: 15px; border-radius: 10px; margin: 10px 0;'> para a tabela e <ul> para passos).
+        RETORNE EXCLUSIVAMENTE O CONTEÚDO HTML USANDO ESTAS REGRAS:
+        1. Título: Use <h2 class='text-2xl font-bold text-emerald-800 mb-4'>.
+        2. Dashboard de Macros: Crie uma <div class='grid grid-cols-2 gap-3 mb-6'> com 4 cards internos.
+           Cada card deve ter: <div class='bg-emerald-50 p-3 rounded-xl border border-emerald-100 text-center'>.
+           Use ícones da FontAwesome: 🔥 (Kcal), 💪 (Prot), 🍞 (Carb), 🥑 (Gord).
+        3. Análise Bio: Use uma <div class='bg-blue-50 p-4 rounded-xl border-l-4 border-blue-400 mb-6'> para a análise de biodisponibilidade e carga glicêmica.
+        4. Preparo: Use <ul class='space-y-3'> com <li> contendo ícones de check.
         """
         
-        # Chamada usando o modelo que você já conhece e prefere
         response = client.models.generate_content(
             model="gemini-3.1-flash-lite-preview", 
             contents=prompt
@@ -45,8 +42,7 @@ def gerar():
         
         return jsonify({"receita": response.text})
     except Exception as e:
-        # Log do erro no terminal para facilitar seu diagnóstico
-        print(f"Erro detalhado: {e}")
+        print(f"Erro: {e}")
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
