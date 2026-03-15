@@ -17,6 +17,7 @@ def index():
 def gerar():
     try:
         dados = request.json
+        tempo = dados.get('tempo')
         ingredientes = dados.get('ingredientes')
         objetivo = dados.get('objetivo').upper()
         restricoes = dados.get('restricoes')
