@@ -58,17 +58,37 @@ def gerar_semanal():
         restricoes = dados.get('restricoes')
 
         prompt = f"""
-        Aja como um Nutricionista Chefe altamente especializado em nutrição esportiva e tratamento da obesidade com especialização em gastronomia. Crie um PLANEJAMENTO SEMANAL (7 dias).
-        Baseado em: {ingredientes}. Objetivo: {objetivo}. Restrições: {restricoes}.
-        
+        Aja como um Nutricionista e Especialista nutrição esportiva, tratamento da obesidade e em Logística Doméstica. 
+        Crie um PLANEJAMENTO SEMANAL de 7 dias para: {ingredientes}. 
+        Objetivo: {objetivo}.
+
         FORMATO DE SAÍDA (HTML):
-        1. <h2 class='text-2xl font-bold text-emerald-800 mb-4'>📅 Plano Semanal Pro</h2>
-        2. Crie uma tabela <table> ou grid de 7 cards para os dias da semana.
-        3. <div class='bg-yellow-50 p-6 rounded-2xl border-2 border-yellow-200 my-6'>
-           <h3 class='font-bold text-yellow-800 mb-2'>🛒 Lista de Compras Consolidada</h3>
-           <p class='text-sm mb-3'>Considerando o que você já tem, compre apenas:</p>
-           <ul class='grid grid-cols-2 gap-2'> (Liste os itens faltantes com checkboxes)
-        4. Uma breve análise Bio e Nutri da estratégia da semana.
+        1. <h2 class='text-2xl font-bold text-emerald-800 mb-4'>📅 Cronograma Semanal NutriScan</h2>
+        (Crie um resumo rápido de segunda a domingo)
+
+        2. <div class='bg-gray-100 p-6 rounded-2xl border-2 border-gray-300 my-6 no-print'>
+        <h3 class='font-bold text-gray-800 mb-4'><i class='fas fa-shopping-basket mr-2'></i>Lista de Compras Inteligente</h3>
+        <p class='text-xs mb-4 text-gray-600'>Organizada para você ganhar tempo no mercado:</p>
+        
+        <div class='grid grid-cols-1 md:grid-cols-2 gap-4'>
+            <div>
+                <h4 class='font-bold text-emerald-700 text-sm underline'>🥬 Hortifruti (Frutas e Verdes)</h4>
+                <ul class='text-sm mb-3'> [Itens aqui com checkbox] </ul>
+            </div>
+            <div>
+                <h4 class='font-bold text-red-700 text-sm underline'>🥩 Proteínas (Açougue/Peixaria)</h4>
+                <ul class='text-sm mb-3'> [Itens aqui] </ul>
+            </div>
+            <div>
+                <h4 class='font-bold text-blue-700 text-sm underline'>🧊 Laticínios e Congelados</h4>
+                <ul class='text-sm mb-3'> [Itens aqui] </ul>
+            </div>
+            <div>
+                <h4 class='font-bold text-amber-700 text-sm underline'>🌾 Despensa (Grãos e Temperos)</h4>
+                <ul class='text-sm mb-3'> [Itens aqui] </ul>
+            </div>
+        </div>
+        </div>
         """
         
         response = client.models.generate_content(
