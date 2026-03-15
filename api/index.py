@@ -58,44 +58,39 @@ def gerar_semanal():
         restricoes = dados.get('restricoes')
 
         prompt = f"""
-        Aja como um Nutricionista e Especialista nutrição esportiva, tratamento da obesidade e em Logística Doméstica. 
-        Crie um PLANEJAMENTO SEMANAL de 7 dias para: {ingredientes}. 
-        Objetivo: {objetivo}.
+        Aja como um Nutricionista Clínico Esportivo e especialista em tratamento da obesidade e manutenção da saúde além de ser um chef de cozinha renomado na área da gastronomia. Crie um PLANEJAMENTO SEMANAL (7 dias).
+        O usuário listou as seguintes PREFERÊNCIAS ou base de ingredientes: {ingredientes}.
+        Objetivo: {objetivo}. Restrições: {restricoes}.
 
-        FORMATO DE SAÍDA (HTML):
-        1. <h2 class='text-2xl font-bold text-emerald-800 mb-4'>📅 Cronograma Semanal NutriScan</h2>
-        (Crie um resumo rápido de segunda a domingo)
+        REGRAS CRÍTICAS: 
+        - NÃO limite a dieta apenas aos itens listados! Adicione grande VARIEDADE de alimentos complementares (diferentes proteínas, carboidratos e vegetais) para evitar monotonia.
+        - Inclua o Modo de Preparo prático para as refeições.
 
-        2. <div class='bg-gray-100 p-6 rounded-2xl border-2 border-gray-300 my-6 no-print'>
-        <h3 class='font-bold text-gray-800 mb-4'><i class='fas fa-shopping-basket mr-2'></i>Lista de Compras Inteligente</h3>
-        <p class='text-xs mb-4 text-gray-600'>Organizada para você ganhar tempo no mercado:</p>
+        FORMATO DE SAÍDA (HTML ESTRITO):
+        1. <h2 class='text-2xl font-bold text-emerald-800 mb-4'>📅 Cronograma Semanal</h2>
+        2. Para CADA DIA (Segunda a Domingo), crie um bloco contendo:
+        - Nome da Refeição
+        - Ingredientes
+        - <b>Modo de Preparo:</b> (Instruções claras de como fazer)
+        3. <div class='bg-gray-50 p-6 rounded-2xl border-2 border-gray-200 my-6 no-print'>
+        <h3 class='font-bold text-emerald-900 mb-4'><i class='fas fa-shopping-cart mr-2'></i>Lista de Compras Interativa</h3>
+        Organize por categorias (🥬 Hortifruti, 🥩 Açougue, 🌾 Despensa).
+        Para cada item, dê uma opção (ex: "Batata Doce ou Mandioca").
         
-        <div class='grid grid-cols-1 md:grid-cols-2 gap-4'>
-            <div>
-                <h4 class='font-bold text-emerald-700 text-sm underline'>🥬 Hortifruti (Frutas e Verdes)</h4>
-                <ul class='text-sm mb-3'> [Itens aqui com checkbox] </ul>
-            </div>
-            <div>
-                <h4 class='font-bold text-red-700 text-sm underline'>🥩 Proteínas (Açougue/Peixaria)</h4>
-                <ul class='text-sm mb-3'> [Itens aqui] </ul>
-            </div>
-            <div>
-                <h4 class='font-bold text-blue-700 text-sm underline'>🧊 Laticínios e Congelados</h4>
-                <ul class='text-sm mb-3'> [Itens aqui] </ul>
-            </div>
-            <div>
-                <h4 class='font-bold text-amber-700 text-sm underline'>🌾 Despensa (Grãos e Temperos)</h4>
-                <ul class='text-sm mb-3'> [Itens aqui] </ul>
-            </div>
-        </div>
+        OBRIGATÓRIO: Use EXATAMENTE esta estrutura HTML para cada item da lista (para o JS funcionar):
+        <li class='flex items-center mb-3'>
+            <input type='checkbox' class='mr-3 w-5 h-5 cursor-pointer accent-emerald-600'>
+            <span class='text-gray-700 font-medium'>Nome do Item (ou substituto)</span>
+        </li>
         </div>
         """
         
-       # response = client.models.generate_content(
-           # model="gemini-3.1-flash-lite-preview", 
-            # contents=prompt
-      #  )
-        
-      #  return jsonify({"plano": response.text})
-   # except Exception as e:
-    #    return jsonify({"error": str(e)}), 500    
+        response = client.models.generate_content(
+            model="gemini-3.1-flash-lite-preview", 
+             contents=prompt
+        )
+     
+        return jsonify({"plano": response.text})
+    
+    except Exception as e:
+       return jsonify({"error": str(e)}), 500    

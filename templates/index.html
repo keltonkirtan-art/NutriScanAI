@@ -85,16 +85,21 @@
                     <input type="text" id="restricoes" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none" placeholder="Ex: Sem glúten, Vegano, Sem lactose...">
                 </div>
 
-                <button onclick="gerarReceita()" id="btn-gerar" class="w-full bg-emerald-600 text-white font-bold py-4 rounded-xl hover:bg-emerald-700 transition transform active:scale-95 shadow-md">
-                    GERAR RECEITAS INTELIGENTES
-                </button>
+                <div>
+                    <label class="block text-sm font-semibold mb-1 text-emerald-900">Ingredientes ou Preferências:</label>
+                    <p class="text-xs text-gray-500 mb-2">Para Receita Única: O que tem na geladeira? | Para Plano Semanal: O que você gosta de comer?</p>
+                    <textarea id="ingredientes" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none" rows="3" placeholder="Ex: Frango, batata doce, ovos, abacate..."></textarea>
+                </div>
 
-                <div class="flex gap-2 mt-4">
-                    <button onclick="gerarReceita()" id="btn-gerar" class="flex-[2] bg-emerald-600 text-white font-bold py-4 rounded-xl hover:bg-emerald-700 transition shadow-md">
-                        RECEITA ÚNICA
+                <div class="flex gap-3 mt-6 no-print">
+                    <button onclick="gerarReceita()" id="btn-gerar" class="flex-1 bg-emerald-600 text-white py-3 px-4 rounded-xl hover:bg-emerald-700 transition shadow-md flex flex-col items-center justify-center">
+                        <span class="font-bold text-sm"><i class="fas fa-utensils mr-1"></i> RECEITA ÚNICA</span>
+                        <span class="text-[10px] font-normal opacity-80 mt-1">Usa apenas o que você digitou</span>
                     </button>
-                    <button onclick="gerarPlanoSemanal()" id="btn-semanal" class="flex-1 bg-yellow-400 text-emerald-900 font-bold py-4 rounded-xl hover:bg-yellow-300 transition shadow-md border-b-4 border-yellow-600 active:border-b-0">
-                        PLANO 7 DIAS <span class="text-[10px] block opacity-70">VERSÃO PRO</span>
+                    
+                    <button onclick="gerarPlanoSemanal()" id="btn-semanal" class="flex-1 bg-yellow-400 text-emerald-900 py-3 px-4 rounded-xl hover:bg-yellow-500 transition shadow-md border-b-4 border-yellow-600 active:border-b-0 flex flex-col items-center justify-center">
+                        <span class="font-bold text-sm"><i class="fas fa-calendar-alt mr-1"></i> PLANO 7 DIAS</span>
+                        <span class="text-[10px] font-normal opacity-80 mt-1">NutrIdeiacria variedade baseada no seu gosto</span>
                     </button>
                 </div>
 
@@ -236,6 +241,25 @@
                 },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
+
+            // Ativa o checklist interativo na Lista de Compras
+            document.getElementById('resultado-area').addEventListener('change', function(e) {
+                // Verifica se o que foi clicado foi um checkbox
+                if (e.target && e.target.type === 'checkbox') {
+                    const itemLista = e.target.closest('li'); // Pega a linha do item
+                    const textoItem = itemLista.querySelector('span'); // Pega o texto
+                    
+                    if (itemLista && textoItem) {
+                        if (e.target.checked) {
+                            // Riscado e esmaecido quando marcado
+                            textoItem.classList.add('line-through', 'text-gray-400');
+                        } else {
+                            // Volta ao normal quando desmarcado
+                            textoItem.classList.remove('line-through', 'text-gray-400');
+                        }
+                    }
+                }
+            });
 
             // Execução com tratamento de promessa para mobile
             html2pdf().set(opt).from(elemento).save().then(() => {
