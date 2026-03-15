@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NutriScan AI | Seu Nutricionista Inteligente</title>
+    <title>NutrIdeias IAAI | Seu Nutricionista Inteligente</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
-        #conteudo-receita h2 { @apply text-2xl font-bold text-emerald-800 mb-4; }
+        #conteudo-receita h2 { @apply text-2xl font-bold text-teal-800 mb-4; }
         #conteudo-receita ul { @apply list-none p-0; }
-        #conteudo-receita li { @apply flex items-start mb-2 before:content-['•'] before:text-emerald-500 before:font-bold before:mr-2; }
+        #conteudo-receita li { @apply flex items-start mb-2 before:content-['•'] before:text-teal-500 before:font-bold before:mr-2; }
         
         @media print { 
             /* Esconde tudo que não é a receita */
@@ -64,10 +64,12 @@
 </head>
 <body class="bg-gray-50 font-sans text-gray-800">
 
-    <header class="bg-emerald-600 text-white p-4 shadow-lg">
+    <header class="bg-slate-900 text-white p-4 shadow-lg border-b-4 border-teal-500">
         <div class="container mx-auto flex justify-between items-center">
-            <h1 class="text-xl font-bold tracking-tight"><i class="fas fa-leaf mr-2"></i>NutrIdeias AI</h1>
-            <button class="bg-yellow-400 text-emerald-900 px-3 py-1 rounded-full text-sm font-bold hover:bg-yellow-300 transition">
+            <h1 class="text-xl font-bold tracking-tight">
+                <span class="text-teal-400">NutrIdeias IA</span> AI
+            </h1>
+            <button class="bg-red-600 text-white px-4 py-1 rounded-full text-sm font-bold hover:bg-red-700 transition shadow-[0_0_10px_rgba(220,38,38,0.5)]">
                 SEJA PRO
             </button>
         </div>
@@ -76,7 +78,7 @@
     <main class="container mx-auto px-4 py-8 max-w-2xl">
         
         <section class="mb-8 text-center">
-            <h2 class="text-2xl font-extrabold text-emerald-900">O que temos para hoje?</h2>
+            <h2 class="text-2xl font-extrabold text-teal-900">O que temos para hoje?</h2>
             <p class="text-gray-600">Digite seus ingredientes e veja as ideias mais nutritivas e saborosas para você.</p>
         </section>
 
@@ -86,33 +88,39 @@
                 <div>
                     <label class="block text-sm font-semibold mb-1">Ingredientes na Geladeira:</label>
                     <p class="text-xs text-gray-500 mb-2">Para Receita Única: O que tem na geladeira?</p>
-                    <textarea id="ingredientes" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none" rows="3" placeholder="Ex: 2 ovos, frango, espinafre, tomate..."></textarea>
+                    <textarea id="ingredientes" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none" rows="3" placeholder="Ex: 2 ovos, frango, espinafre, tomate..."></textarea>
                 </div>
 
+                <div class="grid grid-cols-2 gap-4 mb-4">
                 <div>
-                    <label class="block text-sm font-semibold mb-1">Seu Objetivo:</label>
-                    <select id="objetivo" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    <label class="block text-sm font-semibold mb-1 text-teal-900">Seu Peso (kg):</label>
+                    <input type="number" id="peso" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none" placeholder="Ex: 75" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-1 text-teal-900">Seu Objetivo:</label>
+                    <select id="objetivo" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none">
                         <option value="emagrecimento">Emagrecimento</option>
-                        <option value="hipertrofia">Hipertrofia (Ganho de Massa)</option>
+                        <option value="hipertrofia">Hipertrofia</option>
                         <option value="manutencao">Manutenção / Saúde</option>
-                        <option value="performance">Performance Esportiva</option>
+                        <option value="performance">Performance</option>
                     </select>
                 </div>
+</div>
 
                 <div class="mb-4">
-                    <label class="block text-sm font-semibold mb-2 text-emerald-900">Tempo Disponível:</label>
+                    <label class="block text-sm font-semibold mb-2 text-teal-900">Tempo Disponível:</label>
                     <div class="grid grid-cols-2 gap-2">
                         <label class="cursor-pointer">
                             <input type="radio" name="tempo" value="rapido" class="peer hidden" checked>
-                            <div class="text-center p-2 rounded-xl border-2 border-gray-100 peer-checked:border-emerald-500 peer-checked:bg-emerald-50 hover:bg-gray-50 transition">
-                                <span class="block font-bold text-sm text-emerald-800">⚡ Vapt-Vupt</span>
+                            <div class="text-center p-2 rounded-xl border-2 border-gray-100 peer-checked:border-teal-500 peer-checked:bg-teal-50 hover:bg-gray-50 transition">
+                                <span class="block font-bold text-sm text-teal-800">⚡ Vapt-Vupt</span>
                                 <span class="text-[10px] text-gray-500">Até 15 min</span>
                             </div>
                         </label>
                         <label class="cursor-pointer">
                             <input type="radio" name="tempo" value="elaborado" class="peer hidden">
-                            <div class="text-center p-2 rounded-xl border-2 border-gray-100 peer-checked:border-emerald-500 peer-checked:bg-emerald-50 hover:bg-gray-50 transition">
-                                <span class="block font-bold text-sm text-emerald-800">👨‍🍳 Chef Pro</span>
+                            <div class="text-center p-2 rounded-xl border-2 border-gray-100 peer-checked:border-teal-500 peer-checked:bg-teal-50 hover:bg-gray-50 transition">
+                                <span class="block font-bold text-sm text-teal-800">👨‍🍳 Chef Pro</span>
                                 <span class="text-[10px] text-gray-500">Sem pressa</span>
                             </div>
                         </label>
@@ -121,24 +129,24 @@
 
                 <div>
                     <label class="block text-sm font-semibold mb-1">Restrições Alimentares:</label>
-                    <input type="text" id="restricoes" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none" placeholder="Ex: Sem glúten, Vegano, Sem lactose...">
+                    <input type="text" id="restricoes" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none" placeholder="Ex: Sem glúten, Vegano, Sem lactose...">
                 </div>
 
                 <div>
-                    <label class="block text-sm font-semibold mb-1 text-emerald-900">Ingredientes ou Preferências:</label>
+                    <label class="block text-sm font-semibold mb-1 text-teal-900">Ingredientes ou Preferências:</label>
                     <p class="text-xs text-gray-500 mb-2">Para Plano 7 dias: O que você gosta de comer?</p>
-                    <textarea id="ingredientes" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none" rows="3" placeholder="Ex: Frango, batata doce, ovos, abacate..."></textarea>
+                    <textarea id="ingredientes" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none" rows="3" placeholder="Ex: Frango, batata doce, ovos, abacate..."></textarea>
                 </div>
 
                 <div class="flex gap-3 mt-6 no-print">
-                    <button onclick="gerarReceita()" id="btn-gerar" class="flex-1 bg-emerald-600 text-white py-3 px-4 rounded-xl hover:bg-emerald-700 transition shadow-md flex flex-col items-center justify-center">
+                    <button onclick="gerarReceita()" id="btn-gerar" class="flex-1 bg-teal-600 text-white py-3 px-4 rounded-xl hover:bg-teal-700 transition shadow-md flex flex-col items-center justify-center">
                         <span class="font-bold text-sm"><i class="fas fa-utensils mr-1"></i> RECEITA ÚNICA</span>
                         <span class="text-[10px] font-normal opacity-80 mt-1">O que você digitou no 1º campo</span>
                     </button>
                     
-                    <button onclick="gerarPlanoSemanal()" id="btn-semanal" class="flex-1 bg-yellow-400 text-emerald-900 py-3 px-4 rounded-xl hover:bg-yellow-500 transition shadow-md border-b-4 border-yellow-600 active:border-b-0 flex flex-col items-center justify-center">
+                    <button onclick="gerarPlanoSemanal()" id="btn-semanal" class="flex-1 bg-red-600 text-white py-3 px-4 rounded-xl hover:bg-red-700 transition shadow-md border-b-4 border-red-800 active:border-b-0 flex flex-col items-center justify-center">
                         <span class="font-bold text-sm"><i class="fas fa-calendar-alt mr-1"></i> PLANO 7 DIAS</span>
-                        <span class="text-[10px] font-normal opacity-80 mt-1">NutrIdeias | Campos: Geladeira + Preferências</span>
+                        <span class="text-[10px] font-normal opacity-80 mt-1">NutrIdeias IA cria ocções baseado no seu gosto</span>
                     </button>
                 </div>
 
@@ -146,26 +154,35 @@
         </div>
 
         <div id="resultado-area" class="hidden space-y-4">
-            <div class="bg-white rounded-2xl shadow-md p-6 border-l-4 border-emerald-500">
+            <div class="bg-white rounded-2xl shadow-md p-6 border-l-4 border-teal-500">
                 <div id="loading" class="text-center py-4 hidden">
-                    <i class="fas fa-circle-notch fa-spin text-emerald-500 text-2xl"></i>
+                    <i class="fas fa-circle-notch fa-spin text-teal-500 text-2xl"></i>
                     <p class="mt-2 text-sm text-gray-500">Criando sua receita personalizada...</p>
                 </div>
-                <div id="conteudo-receita" class="prose prose-emerald max-w-none">
+                <div id="conteudo-receita" class="prose prose-teal max-w-none">
                     </div>
                 <div class="mt-6 flex gap-2 no-print">
                     <button onclick="window.print()" class="flex-1 bg-blue-700 text-white py-3 rounded-xl font-bold hover:bg-blue-800 transition shadow-lg">
                         <i class="fas fa-print mr-2"></i> IMPRIMIR / SALVAR PDF
                     </button>
                 </div>
+                <div id="conteudo-receita" class="prose max-w-none"></div>
+
+                <div class="mt-12 pt-6 border-t border-gray-300 text-center text-xs text-gray-500 pb-4 page-break-inside-avoid">
+                    <p class="mb-2"><i class="fas fa-exclamation-triangle text-amber-500 mr-1"></i> <strong>Aviso Legal (Compliance):</strong> O NutrIdeias IA é uma ferramenta de apoio tecnológico baseada em Inteligência Artificial. Este planejamento tem caráter informativo e estimativo.</p>
+                    <p><strong>Não substitui a consulta presencial e individualizada.</strong> Consulte sempre um Médico, Nutricionista ou Profissional de Educação Física antes de iniciar qualquer protocolo de dieta ou treinamento.</p>
+                    <p class="mt-4 font-bold text-slate-800 tracking-widest uppercase text-[10px]">
+                        Desenvolvido por <span class="text-teal-600">MK2MIND</span>
+                    </p>
+                </div>
             </div>
 
-            <div class="bg-emerald-900 text-white p-6 rounded-2xl flex items-center justify-between">
+            <div class="bg-teal-900 text-white p-6 rounded-2xl flex items-center justify-between">
                 <div>
                     <h3 class="font-bold">Gostou da sugestão?</h3>
-                    <p class="text-xs text-emerald-200">Gere um cardápio para a semana toda e receba a lista de compras!</p>
+                    <p class="text-xs text-teal-200">Gere um cardápio para a semana toda e receba a lista de compras!</p>
                 </div>
-                <button class="bg-emerald-500 p-2 rounded-lg font-bold text-sm">Ver Plano</button>
+                <button class="bg-teal-500 p-2 rounded-lg font-bold text-sm">Ver Plano</button>
             </div>
         </div>
 
@@ -173,6 +190,7 @@
 
     <script> 
         async function gerarReceita() {
+            const peso = document.getElementById('peso').value || 70; // 70kg como padrão se o usuário esquecer
             const tempo = document.querySelector('input[name="tempo"]:checked').value;
             const area = document.getElementById('resultado-area');
             const loading = document.getElementById('loading');
@@ -199,7 +217,7 @@
                 const response = await fetch('/gerar-receita', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ ingredientes, objetivo, restricoes, tempo })
+                    body: JSON.stringify({ ingredientes, objetivo, restricoes, tempo, peso })
                 });
 
                 const data = await response.json();
@@ -220,6 +238,7 @@
         }
         // Função para gerar plano semanal (simulada, pois o backend ainda não tem essa rota)
         async function gerarPlanoSemanal() {
+            const peso = document.getElementById('peso').value || 70; // 70kg como padrão se o usuário esquecer
             const tempo = document.querySelector('input[name="tempo"]:checked').value;
             const area = document.getElementById('resultado-area');
             const loading = document.getElementById('loading');
@@ -242,7 +261,7 @@
                 const response = await fetch('/gerar-plano-semanal', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ ingredientes, objetivo, restricoes, tempo })
+                    body: JSON.stringify({ ingredientes, objetivo, restricoes, tempo, peso })
                 });
 
                 const data = await response.json();
