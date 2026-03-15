@@ -11,16 +11,36 @@
         #conteudo-receita h2 { @apply text-2xl font-bold text-emerald-800 mb-4; }
         #conteudo-receita ul { @apply list-none p-0; }
         #conteudo-receita li { @apply flex items-start mb-2 before:content-['•'] before:text-emerald-500 before:font-bold before:mr-2; }
-    
-        @media print {
-            body * { visibility: hidden; } /* Esconde tudo */
-            #conteudo-receita, #conteudo-receita * { visibility: visible; } /* Mostra só a receita */
-            #conteudo-receita {
+        
+        @media print { 
+            /* Esconde tudo que não é a receita */
+            body * {
+                visibility: hidden;
+            }
+            
+            /* Mostra apenas a área da receita e seus filhos */
+            #resultado-area, #resultado-area *, #conteudo-receita, #conteudo-receita * {
+                visibility: visible;
+            }
+
+            /* Posiciona a receita no topo da página de impressão */
+            #resultado-area {
                 position: absolute;
                 left: 0;
                 top: 0;
                 width: 100%;
+                margin: 0;
+                padding: 0;
             }
+
+            /* Esconde os botões de ação dentro da área de resultado no PDF */
+            .no-print {
+                display: none !important;
+            }
+
+            /* Ajuste para não cortar páginas no meio de parágrafos */
+            h2, h3 { page-break-after: avoid; }
+            div, p { page-break-inside: auto; }
         }
     </style>
 </head>
@@ -28,7 +48,7 @@
 
     <header class="bg-emerald-600 text-white p-4 shadow-lg">
         <div class="container mx-auto flex justify-between items-center">
-            <h1 class="text-xl font-bold tracking-tight"><i class="fas fa-leaf mr-2"></i>NutriScan AI</h1>
+            <h1 class="text-xl font-bold tracking-tight"><i class="fas fa-leaf mr-2"></i>NutrIdeias AI</h1>
             <button class="bg-yellow-400 text-emerald-900 px-3 py-1 rounded-full text-sm font-bold hover:bg-yellow-300 transition">
                 SEJA PRO
             </button>
@@ -39,7 +59,7 @@
         
         <section class="mb-8 text-center">
             <h2 class="text-2xl font-extrabold text-emerald-900">O que temos para hoje?</h2>
-            <p class="text-gray-600">Digite seus ingredientes e deixe a IA cozinhar para você.</p>
+            <p class="text-gray-600">Digite seus ingredientes e veja as melhores ideias nutritivas e saborosas para você.</p>
         </section>
 
         <div class="bg-white rounded-2xl shadow-sm p-6 mb-6 border border-gray-100">
@@ -66,8 +86,17 @@
                 </div>
 
                 <button onclick="gerarReceita()" id="btn-gerar" class="w-full bg-emerald-600 text-white font-bold py-4 rounded-xl hover:bg-emerald-700 transition transform active:scale-95 shadow-md">
-                    GERAR RECEITA COM IA
+                    GERAR RECEITAS INTELIGENTES
                 </button>
+
+                <div class="flex gap-2 mt-4">
+                    <button onclick="gerarReceita()" id="btn-gerar" class="flex-[2] bg-emerald-600 text-white font-bold py-4 rounded-xl hover:bg-emerald-700 transition shadow-md">
+                        RECEITA ÚNICA
+                    </button>
+                    <button onclick="gerarPlanoSemanal()" id="btn-semanal" class="flex-1 bg-yellow-400 text-emerald-900 font-bold py-4 rounded-xl hover:bg-yellow-300 transition shadow-md border-b-4 border-yellow-600 active:border-b-0">
+                        PLANO 7 DIAS <span class="text-[10px] block opacity-70">VERSÃO PRO</span>
+                    </button>
+                </div>
 
             </div>
         </div>
@@ -80,8 +109,8 @@
                 </div>
                 <div id="conteudo-receita" class="prose prose-emerald max-w-none">
                     </div>
-                <div class="mt-4 flex gap-2">
-                    <button onclick="window.print()" class="w-full bg-blue-600 text-white py-2 rounded-lg font-bold mt-4">
+                <div class="mt-6 flex gap-2 no-print">
+                    <button onclick="window.print()" class="flex-1 bg-blue-700 text-white py-3 rounded-xl font-bold hover:bg-blue-800 transition shadow-lg">
                         <i class="fas fa-print mr-2"></i> IMPRIMIR / SALVAR PDF
                     </button>
                 </div>
@@ -98,7 +127,7 @@
 
     </main>
 
-    <script>
+    <script> 
         async function gerarReceita() {
             const area = document.getElementById('resultado-area');
             const loading = document.getElementById('loading');
@@ -144,6 +173,48 @@
                 btn.disabled = false;
             }
         }
+        // Função para gerar plano semanal (simulada, pois o backend ainda não tem essa rota)
+        async function gerarPlanoSemanal() {
+            const area = document.getElementById('resultado-area');
+            const loading = document.getElementById('loading');
+            const conteudo = document.getElementById('conteudo-receita');
+            
+            const ingredientes = document.getElementById('ingredientes').value;
+            const objetivo = document.getElementById('objetivo').value;
+            const restricoes = document.getElementById('restricoes').value;
+
+            if (!ingredientes) {
+                alert("Para o plano semanal, preciso saber o que você já tem em casa!");
+                return;
+            }
+
+            area.classList.remove('hidden');
+            loading.classList.remove('hidden');
+            conteudo.innerHTML = "";
+
+            try {
+                const response = await fetch('/gerar-plano-semanal', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ingredientes, objetivo, restricoes })
+                });
+
+                const data = await response.json();
+                loading.classList.add('hidden');
+                
+                // Aqui simulamos o "Gatilho de Venda"
+                conteudo.innerHTML = `
+                    <div class="bg-gradient-to-r from-yellow-500 to-yellow-600 text-white p-3 rounded-lg text-center mb-6 font-bold animate-pulse">
+                        ⭐ VOCÊ ESTÁ ACESSANDO UMA PRÉVIA DO MODO PRO ⭐
+                    </div>
+                    ${data.plano}
+                `;
+            } catch (error) {
+                loading.classList.add('hidden');
+                conteudo.innerHTML = `<p class="text-red-500">Erro: ${error.message}</p>`;
+            }
+        }
+        // Função para baixar PDF usando html2pdf.js
         function baixarPDF() {
             const elemento = document.getElementById('conteudo-receita');
             const btn = event.currentTarget; // Pega o botão clicado

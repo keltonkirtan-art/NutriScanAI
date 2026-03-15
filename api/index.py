@@ -46,3 +46,36 @@ def gerar():
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000) # Mudamos de 5000
+    
+    # nova rota que peça explicitamente à IA um planejamento de 7 dias e uma lista consolidada.
+    
+@app.route('/gerar-plano-semanal', methods=['POST'])
+def gerar_semanal():
+    try:
+        dados = request.json
+        ingredientes = dados.get('ingredientes')
+        objetivo = dados.get('objetivo').upper()
+        restricoes = dados.get('restricoes')
+
+        prompt = f"""
+        Aja como um Nutricionista Chefe altamente especializado em nutrição esportiva e tratamento da obesidade com especialização em gastronomia. Crie um PLANEJAMENTO SEMANAL (7 dias).
+        Baseado em: {ingredientes}. Objetivo: {objetivo}. Restrições: {restricoes}.
+        
+        FORMATO DE SAÍDA (HTML):
+        1. <h2 class='text-2xl font-bold text-emerald-800 mb-4'>📅 Plano Semanal Pro</h2>
+        2. Crie uma tabela <table> ou grid de 7 cards para os dias da semana.
+        3. <div class='bg-yellow-50 p-6 rounded-2xl border-2 border-yellow-200 my-6'>
+           <h3 class='font-bold text-yellow-800 mb-2'>🛒 Lista de Compras Consolidada</h3>
+           <p class='text-sm mb-3'>Considerando o que você já tem, compre apenas:</p>
+           <ul class='grid grid-cols-2 gap-2'> (Liste os itens faltantes com checkboxes)
+        4. Uma breve análise Bio e Nutri da estratégia da semana.
+        """
+        
+        response = client.models.generate_content(
+            model="gemini-3.1-flash-lite-preview", 
+            contents=prompt
+        )
+        
+        return jsonify({"plano": response.text})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500    
