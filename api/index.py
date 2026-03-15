@@ -20,10 +20,11 @@ def gerar():
         ingredientes = dados.get('ingredientes')
         objetivo = dados.get('objetivo').upper()
         restricoes = dados.get('restricoes')
+        instrucao_tempo = "FOCO TOTAL EM PRATICIDADE: Refeições de no máximo 15 min, poucos utensílios." if tempo == 'rapido' else "Pode sugerir técnicas mais elaboradas, marinadas e preparos lentos para máximo sabor."
 
         prompt = f"""
         Aja como um Nutricionista Clínico (pós-graduado em Nutrição Esportiva, tratammento da obesidade, manutenção da saúde e Gastronomia) e Designer de UI.
-        Crie uma solução nutricional inteligente  e acessível para: {ingredientes}. Objetivo: {objetivo}. 
+        Crie uma solução nutricional inteligente e acessível para: {ingredientes}. Objetivo: {objetivo}. RESTRIÇÃO DE TEMPO: {instrucao_tempo}
         Restrições: {restricoes}.
         
         RETORNE EXCLUSIVAMENTE O CONTEÚDO HTML USANDO ESTAS REGRAS:
@@ -32,13 +33,13 @@ def gerar():
         3. Análise Bio: <div class='bg-blue-50 p-4 rounded-xl border-l-4 border-blue-400 mb-6'> (fale sobre biodisponibilidade).
         
         4. MODO DE PREPARO (Checklist Interativo):
-           Para cada passo, use EXATAMENTE esta estrutura:
+           Para cada preparação, use EXATAMENTE esta estrutura:
            <div class='flex items-start mb-4 bg-white p-4 rounded-xl shadow-sm border border-gray-100'>
                 <div class='mr-4 mt-1'>
                     <input type='checkbox' class='w-6 h-6 accent-emerald-600 cursor-pointer'>
                 </div>
                 <div>
-                    <strong class='block text-emerald-800 text-xs uppercase tracking-widest mb-1'>Passo: Nome do Alimento</strong>
+                    <strong class='block text-emerald-800 text-xs uppercase tracking-widest mb-1'>Preparação: Nome do Alimento</strong>
                     <p class='text-gray-600 text-sm leading-relaxed'>Instrução clara. Sugira um substituto se aplicável (ex: 'ou Frango').</p>
                 </div>
            </div>
@@ -63,6 +64,7 @@ if __name__ == "__main__":
 def gerar_semanal():
     try:
         dados = request.json
+        tempo = dados.get('tempo')
         ingredientes = dados.get('ingredientes')
         objetivo = dados.get('objetivo').upper()
         restricoes = dados.get('restricoes')
@@ -70,25 +72,27 @@ def gerar_semanal():
         prompt = f"""
         Aja como um Nutricionista Clínico Esportivo (Especialista em Fisiologia e Gastronomia). 
         Crie um PLANEJAMENTO SEMANAL (7 dias) para: {ingredientes}.
-        Objetivo: {objetivo}. Restrições: {restricoes}.
+        Objetivo: {objetivo}. ESTRATÉGIA DE TEMPO ({tempo.upper()}):
+        { "Sugira receitas que usem a mesma base (ex: cozinhar frango para 2 dias) para otimizar o tempo." if tempo == 'rapido' else "Foque em variedade gourmet e técnicas gastronômicas diversas." }
+        Restrições: {restricoes}.
 
         REGRAS DE CONTEÚDO:
         1. VARIEDADE: Não use apenas os itens listados. Adicione vegetais, diferentes fontes de fibras e gorduras boas.
         2. SUBSTITUTOS: Em cada proteína ou carbo, sugira uma opção (Ex: Frango ou Tofu).
         
         FORMATO DE SAÍDA (HTML ESTRITO):
-        1. Título: <h2 class='text-2xl font-bold text-emerald-800 mb-6'>📅 Cronograma Semanal NutriScan</h2>
+        1. Título: <h2 class='text-2xl font-bold text-emerald-800 mb-6'>📅 Cronograma Semanal NutrIdeias IA</h2>
 
         2. PARA CADA DIA (Segunda a Domingo):
            - <div class='mb-8 p-4 bg-emerald-50 rounded-2xl border border-emerald-100'>
            - <h3 class='text-lg font-bold text-emerald-700 mb-3 border-b border-emerald-200 pb-1'>DIA: Nome do Dia</h3>
            - <strong>Refeição Sugerida:</strong> Nome do Prato.
            - <strong>Modo de Preparo (Checklist):</strong>
-             Use esta estrutura para cada passo:
+             Use esta estrutura para cada preparação:
              <div class='flex items-start mt-3 mb-3 bg-white p-3 rounded-xl shadow-sm border-l-4 border-emerald-500'>
                 <div class='mr-3 mt-1'><input type='checkbox' class='w-6 h-6 accent-emerald-600'></div>
                 <div>
-                    <strong class='block text-xs uppercase text-emerald-800'>Passo: Nome</strong>
+                    <strong class='block text-xs uppercase text-emerald-800'>Preparação: Nome</strong>
                     <p class='text-gray-600 text-sm'>Instrução detalhada aqui.</p>
                 </div>
              </div>
