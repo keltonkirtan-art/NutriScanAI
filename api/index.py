@@ -14,7 +14,6 @@ def index():
     return render_template('index.html')
 
 @app.route('/gerar-receita', methods=['POST'])
-@app.route('/gerar-receita', methods=['POST'])
 def gerar():
     try:
         dados = request.json
@@ -23,8 +22,8 @@ def gerar():
         restricoes = dados.get('restricoes')
 
         prompt = f"""
-        Aja como um Nutricionista e Designer de UI. 
-        Crie uma receita para: {ingredientes}. Objetivo: {objetivo}.
+        Aja como um Nutricionista com pós graduação em Nutrição esportiva e em tratamento e obesidade e Designer de UI.
+        Crie uma receita saudável para: {ingredientes}. Objetivo: {objetivo}.
         
         RETORNE EXCLUSIVAMENTE O CONTEÚDO HTML USANDO ESTAS REGRAS:
         1. Título: Use <h2 class='text-2xl font-bold text-emerald-800 mb-4'>.
@@ -43,7 +42,7 @@ def gerar():
         return jsonify({"receita": response.text})
     except Exception as e:
         print(f"Erro: {e}")
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": str(e)}), 500 # Retorna status 500 em caso de erro
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000) # Mudamos de 5000
