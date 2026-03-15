@@ -91,11 +91,11 @@ def gerar_semanal():
         </div>
         """
         
-        response = client.models.generate_content(
-            model="gemini-3.1-flash-lite-preview", 
-            contents=prompt
-        )
+       # response = client.models.generate_content(
+           # model="gemini-3.1-flash-lite-preview", 
+            # contents=prompt
+      #  )
         
-        return jsonify({"plano": response.text})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500    
+      #  return jsonify({"plano": response.text})
+   # except Exception as e:
+    #    return jsonify({"error": str(e)}), 500    
