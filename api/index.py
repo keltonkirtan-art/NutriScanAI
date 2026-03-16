@@ -126,26 +126,30 @@ def gerar_semanal():
         altura_m = altura_cm / 100
         imc = round(peso / (altura_m ** 2), 1)
 
+        # 👇 AQUI ESTÁ O AJUSTE PARA O PLANO SEMANAL 👇
+        instrucao_tempo_semanal = "PRATICIDADE MÁXIMA: Sugira receitas curtas que usem a mesma base (batch cooking) para otimizar o tempo na cozinha." if tempo == 'rapido' else "ALTA GASTRONOMIA ('CHEF PRO'): Sugira preparos refinados e técnicas gourmet (marinadas, deglaçagem, reduções). IMPORTANTE: Seja direto e conciso nas instruções para garantir que o texto seja dinâmico para leitura no PDF. O foco é na sofisticação do sabor, não em textos longos."
+
         prompt = f"""
         Aja como um Nutricionista Clínico Esportivo (Especialista em Fisiologia e Gastronomia). 
-        Crie um PLANEJAMENTO SEMANAL (7 dias) para: {ingredientes}.
+        Crie um PLANEJAMENTO SEMANAL (7 dias) OBRIGATORIAMENTE COMPLETO para: {ingredientes}.
         
         PERFIL DO PACIENTE: Sexo: {sexo} | Idade: {idade} anos | Peso: {peso}kg | IMC: {imc}
         Objetivo Fisiológico: {objetivo}. 
         Restrições: {restricoes}.
         
         ESTRATÉGIA DE TEMPO ({tempo.upper()}):
-        { "PRATICIDADE MÁXIMA: Sugira receitas curtas que usem a mesma base (ex: 'batch cooking', cozinhar para 2 dias) para otimizar o tempo na cozinha. Textos mais enxutos." if tempo == 'rapido' else "ALTA GASTRONOMIA ('CHEF PRO'): O Modo de Preparo deve ser MUITO MAIS LONGO e detalhado do que o normal. Foque em variedade gourmet, explique os tempos de marinada, processos de cocção lenta, reduções de molhos e empratamento." }
+        { instrucao_tempo_semanal }
 
-        REGRAS DE CONTEÚDO:
-        1. VARIEDADE: Não use apenas os itens listados. Adicione vegetais, diferentes fontes de fibras e gorduras boas.
-        2. SUBSTITUTOS: Em cada proteína ou carbo, sugira uma opção (Ex: Frango ou Tofu).
+        REGRAS DE CONTEÚDO (CRÍTICO):
+        1. GERE EXATAMENTE 7 DIAS (Segunda a Domingo). Não pare de gerar antes de terminar o Domingo.
+        2. VARIEDADE: Não use apenas os itens listados. Adicione vegetais, fontes de fibras e gorduras boas.
+        3. SUBSTITUTOS: Em cada proteína ou carbo, sugira uma opção (Ex: Frango ou Tofu).
         
         FORMATO DE SAÍDA (HTML ESTRITO):
         1. Título: <h2 class='text-2xl font-bold text-teal-800 mb-6'>📅 Cronograma Semanal NutrIdeias IA</h2>
 
         2. PARA CADA DIA (Segunda a Domingo):
-           - <div class='mb-8 p-4 bg-teal-50 rounded-2xl border border-teal-100'>
+           - <div class='mb-8 p-4 bg-teal-50 rounded-2xl border border-teal-100 page-break-inside-avoid'>
            - <h3 class='text-lg font-bold text-teal-700 mb-3 border-b border-teal-200 pb-1'>DIA: Nome do Dia</h3>
            - <strong>Refeição Sugerida:</strong> Nome do Prato.
            - <strong>Modo de Preparo (Checklist):</strong>
@@ -154,7 +158,7 @@ def gerar_semanal():
                 <div class='mr-3 mt-1'><input type='checkbox' class='w-6 h-6 accent-teal-600'></div>
                 <div>
                     <strong class='block text-xs uppercase text-teal-800'>Preparação: Nome</strong>
-                    <p class='text-gray-600 text-sm'>Instrução detalhada aqui.</p>
+                    <p class='text-gray-600 text-sm'>Instrução detalhada e com técnica gourmet aqui.</p>
                 </div>
              </div>
            - </div>
@@ -177,9 +181,3 @@ def gerar_semanal():
     except Exception as e:
         print(f"Erro no Plano Semanal: {e}")
         return jsonify({"error": str(e)}), 500
-
-# ==========================================
-# INICIALIZAÇÃO DO SERVIDOR (Sempre no final!)
-# ==========================================
-if __name__ == "__main__":
-    app.run(debug=True, port=5000)
