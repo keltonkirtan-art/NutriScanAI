@@ -82,30 +82,42 @@
             <p class="text-gray-600">Digite seus ingredientes e veja as ideias mais nutritivas e saborosas para você.</p>
         </section>
 
-        <div class="bg-white rounded-2xl shadow-sm p-6 mb-6 border border-gray-100">
-            <div class="space-y-4">
-                
+        <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm mb-6">
+            <h3 class="text-sm font-bold text-teal-800 mb-3 border-b border-gray-100 pb-2">
+                <i class="fas fa-notes-medical mr-1"></i> Perfil Biológico (PRO)
+            </h3>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
                 <div>
-                    <label class="block text-sm font-semibold mb-1">Ingredientes na Geladeira:</label>
-                    <p class="text-xs text-gray-500 mb-2">Para Receita Única: O que tem na geladeira?</p>
-                    <textarea id="ingredientes" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none" rows="3" placeholder="Ex: 2 ovos, frango, espinafre, tomate..."></textarea>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4 mb-4">
-                <div>
-                    <label class="block text-sm font-semibold mb-1 text-teal-900">Seu Peso (kg):</label>
-                    <input type="number" id="peso" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none" placeholder="Ex: 75" required>
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold mb-1 text-teal-900">Seu Objetivo:</label>
-                    <select id="objetivo" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none">
-                        <option value="emagrecimento">Emagrecimento</option>
-                        <option value="hipertrofia">Hipertrofia</option>
-                        <option value="manutencao">Manutenção / Saúde</option>
-                        <option value="performance">Performance</option>
+                    <label class="block text-xs font-bold mb-1 text-slate-700">Sexo:</label>
+                    <select id="sexo" class="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 text-sm">
+                        <option value="masculino">Masculino</option>
+                        <option value="feminino">Feminino</option>
                     </select>
                 </div>
-</div>
+                <div>
+                    <label class="block text-xs font-bold mb-1 text-slate-700">Idade:</label>
+                    <input type="number" id="idade" class="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 text-sm" placeholder="Ex: 35">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold mb-1 text-slate-700">Peso (kg):</label>
+                    <input type="number" id="peso" step="0.1" class="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 text-sm" placeholder="Ex: 88.5">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold mb-1 text-slate-700">Altura (cm):</label>
+                    <input type="number" id="altura" class="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 text-sm" placeholder="Ex: 175">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold mb-1 text-slate-700">Objetivo:</label>
+                <select id="objetivo" class="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 text-sm">
+                    <option value="emagrecimento">Emagrecimento (Déficit Calórico)</option>
+                    <option value="hipertrofia">Hipertrofia (Superávit Calórico)</option>
+                    <option value="manutencao">Manutenção(Normocalórica)</option>
+                </select>
+            </div>
+        </div>
 
                 <div class="mb-4">
                     <label class="block text-sm font-semibold mb-2 text-teal-900">Tempo Disponível:</label>
@@ -190,35 +202,46 @@
 
     <script> 
         async function gerarReceita() {
-            const peso = document.getElementById('peso').value || 70; // 70kg como padrão se o usuário esquecer
-            const tempo = document.querySelector('input[name="tempo"]:checked').value;
-            const area = document.getElementById('resultado-area');
-            const loading = document.getElementById('loading');
-            const conteudo = document.getElementById('conteudo-receita');
-            const btn = document.getElementById('btn-gerar');
-            
-            // Pegando os valores dos campos
-            const ingredientes = document.getElementById('ingredientes').value;
-            const objetivo = document.getElementById('objetivo').value;
-            const restricoes = document.getElementById('restricoes').value;
+        // 1. Captura os Elementos Visuais da Tela
+        const area = document.getElementById('resultado-area');
+        const loading = document.getElementById('loading');
+        const conteudo = document.getElementById('conteudo-receita');
+        const btn = document.getElementById('btn-gerar');
 
-            if (!ingredientes) {
-                alert("Por favor, digite os ingredientes que você tem!");
-                return;
-            }
+        // 2. Captura os Dados Básicos da Dieta
+        const ingredientes = document.getElementById('ingredientes').value;
+        const restricoes = document.getElementById('restricoes').value;
+        
+        // ATENÇÃO: Se o usuário não digitar nada, a função para aqui (Validação)
+        if (!ingredientes) {
+            alert("Por favor, informe os ingredientes!");
+            return;
+        }
 
-            // UI Feedback
-            area.classList.remove('hidden');
-            loading.classList.remove('hidden');
-            conteudo.innerHTML = "";
-            btn.disabled = true; // Evita cliques múltiplos
+        // 3. Captura as Configurações (Tempo e Anamnese Clínica)
+        const tempo = document.querySelector('input[name="tempo"]:checked').value;
+        const objetivo = document.getElementById('objetivo').value;
+        const sexo = document.getElementById('sexo').value;
+        const idade = document.getElementById('idade').value || 30; // 30 é o fallback (padrão)
+        const peso = document.getElementById('peso').value || 70;
+        const altura = document.getElementById('altura').value || 170;
 
-            try {
-                const response = await fetch('/gerar-receita', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ ingredientes, objetivo, restricoes, tempo, peso })
-                });
+        // Muda o visual do botão para mostrar que está carregando
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> GERANDO...';
+        btn.disabled = true;
+        area.classList.remove('hidden');
+        loading.classList.remove('hidden');
+        conteudo.innerHTML = "";
+
+        try {
+            const response = await fetch('/gerar-receita', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                // 4. Envia TODOS os dados capturados para o Python
+                body: JSON.stringify({ ingredientes, objetivo, restricoes, tempo, sexo, idade, peso, altura })
+            });
+        
+        // ... (resto do código continua igual)
 
                 const data = await response.json();
 
@@ -238,34 +261,46 @@
         }
         // Função para gerar plano semanal (simulada, pois o backend ainda não tem essa rota)
         async function gerarPlanoSemanal() {
-            const peso = document.getElementById('peso').value || 70; // 70kg como padrão se o usuário esquecer
-            const tempo = document.querySelector('input[name="tempo"]:checked').value;
+            // 1. Captura os Elementos da Interface
             const area = document.getElementById('resultado-area');
             const loading = document.getElementById('loading');
             const conteudo = document.getElementById('conteudo-receita');
             
+            // 2. Captura os Dados Básicos
             const ingredientes = document.getElementById('ingredientes').value;
-            const objetivo = document.getElementById('objetivo').value;
             const restricoes = document.getElementById('restricoes').value;
+            const tempo = document.querySelector('input[name="tempo"]:checked').value;
 
+            // 3. Captura a Anamnese Clínica (Perfil Biológico)
+            const objetivo = document.getElementById('objetivo').value;
+            const sexo = document.getElementById('sexo').value;
+            const idade = document.getElementById('idade').value || 30; // 30 como padrão se vazio
+            const peso = document.getElementById('peso').value || 70; // 70kg como padrão
+            const altura = document.getElementById('altura').value || 170; // 170cm como padrão
+
+            // 4. Validação: Impede de rodar se não tiver ingredientes
             if (!ingredientes) {
-                alert("Para o plano semanal, preciso saber o que você já tem em casa!");
+                alert("Para o plano semanal, preciso saber suas preferências ou o que tem na geladeira!");
                 return;
             }
 
+            // 5. Prepara a Tela (Mostra o Loading)
             area.classList.remove('hidden');
             loading.classList.remove('hidden');
             conteudo.innerHTML = "";
 
             try {
+                // 6. Envia tudo para o Python
                 const response = await fetch('/gerar-plano-semanal', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ ingredientes, objetivo, restricoes, tempo, peso })
+                    body: JSON.stringify({ ingredientes, objetivo, restricoes, tempo, sexo, idade, peso, altura })
                 });
 
                 const data = await response.json();
                 loading.classList.add('hidden');
+        
+        // ... (resto do seu código, onde você injeta a resposta na tela)
                 
                 // Aqui simulamos o "Gatilho de Venda"
                 conteudo.innerHTML = `
