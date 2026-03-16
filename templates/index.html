@@ -82,45 +82,8 @@
             <p class="text-gray-600">Digite seus ingredientes e veja as ideias mais nutritivas e saborosas para você.</p>
         </section>
 
-        # <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm mb-6">
-           #   <h3 class="text-sm font-bold text-teal-800 mb-3 border-b border-gray-100 pb-2">
-                <i class="fas fa-notes-medical mr-1"></i> Perfil Biológico (PRO)
-           #   </h3>
-            
-            #  <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
-               #   <div>
-                    #  <label class="block text-xs font-bold mb-1 text-slate-700">Sexo:</label>
-                    #  <select id="sexo" class="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 text-sm">
-                       #   <option value="masculino">Masculino</option>
-                       #   <option value="feminino">Feminino</option>
-                    #  </select>
-                #  </div>
-                #  <div>
-                   #   <label class="block text-xs font-bold mb-1 text-slate-700">Idade:</label>
-                   #   <input type="number" id="idade" class="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 text-sm" placeholder="Ex: 35">
-                #  </div>
-                #  <div>
-                    #  <label class="block text-xs font-bold mb-1 text-slate-700">Peso (kg):</label>
-                    #  <input type="number" id="peso" step="0.1" class="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 text-sm" placeholder="Ex: 88.5">
-                #  </div>
-               #   <div>
-                   #   <label class="block text-xs font-bold mb-1 text-slate-700">Altura (cm):</label>
-                   #   <input type="number" id="altura" class="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 text-sm" placeholder="Ex: 175">
-               #   </div>
-           #   </div>
 
-           # <div>
-              #  <label class="block text-xs font-bold mb-1 text-slate-700">Objetivo:</label>
-              #  <select id="objetivo" class="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 text-sm">
-                  #  <option value="emagrecimento">Emagrecimento (Déficit Calórico)</option>
-                  #  <option value="hipertrofia">Hipertrofia (Superávit Calórico)</option>
-                  #  <option value="manutencao">Manutenção (Normocalórica)</option>
-                  #  <option value="performance">Performance Esportiva</option>
-               # </select>
-           # </div>
-      #  </div>
-
-	# Bloqueando o "Perfil Biológico"
+	    //Bloqueando o "Perfil Biológico"
 
 	<div class="relative mb-6">
             
@@ -166,7 +129,7 @@
             </div>
         </div>
 
-		# fim do bloqueio
+		// fim do bloqueio
 
                 <div class="mb-4">
                     <label class="block text-sm font-semibold mb-2 text-teal-900">Tempo Disponível:</label>
@@ -205,24 +168,7 @@
                     <input type="text" id="restricoes" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none" placeholder="Ex: Sem glúten, Vegano, Sem lactose...">
                 </div>
 
-		# Bloqueando o Botão "Plano 7 Dias"
-
-               # <div class="flex gap-3 mt-6 no-print">
-                 #   <button onclick="gerarReceita()" id="btn-gerar" class="flex-1 bg-teal-600 text-white py-3 px-4 rounded-xl hover:bg-teal-700 transition shadow-md flex flex-col items-	center justify-center">
-                      #  <span class="font-bold text-sm"><i class="fas fa-utensils mr-1"></i> RECEITA ÚNICA</span>
-                      #  <span class="text-[10px] font-normal opacity-80 mt-1">O que você digitou no 1º campo</span>
-                   # </button>
-                    
-                  #  <button onclick="gerarPlanoSemanal()" id="btn-semanal" class="flex-1 bg-red-600 text-white py-3 px-4 rounded-xl hover:bg-red-700 transition shadow-md border-b-4 border-red-800 active:border-b-0 flex flex-col items-center justify-center">
-                      #  <span class="font-bold text-sm"><i class="fas fa-calendar-alt mr-1"></i> PLANO 7 DIAS</span>
-                     #   <span class="text-[10px] font-normal opacity-80 mt-1">NutrIdeias IA cria ocções baseado no seu gosto</span>
-                  #  </button>
-               # </div>
-
-           # </div>
-      #  </div>
 		
-	# fim do bloqueio
 
 	<div class="flex gap-3 mt-6 no-print">
             <button onclick="gerarReceita()" id="btn-gerar" class="flex-1 bg-teal-600 text-white py-3 px-4 rounded-xl hover:bg-teal-700 transition shadow-md flex flex-col items-center justify-center">
@@ -237,8 +183,8 @@
             </button>
         </div>
 
-		# mudamos o visual do botão vermelho para um visual "cinza bloqueado" acima
-		# fim
+		    // mudamos o visual do botão vermelho para um visual "cinza bloqueado" acima
+		    // fim
 
 
         <div id="resultado-area" class="hidden space-y-4">
