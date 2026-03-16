@@ -40,14 +40,17 @@ def gerar():
             tmb = (10 * peso) + (6.25 * altura_cm) - (5 * idade) - 161
         tmb = round(tmb)
 
-        # Lógica de Proteína
-        fator_prot = 2.0
+        # 3. Lógica de Proteína Ajustada
+        fator_prot = 2.0 # Padrão para hipertrofia
         if 'emagrecimento' in objetivo:
             fator_prot = 2.2
         elif 'manutencao' in objetivo:
             fator_prot = 1.6
+        elif 'performance' in objetivo:
+            fator_prot = 1.8 # Ajuste clínico para atletas de performance
             
         meta_proteina = round(peso * fator_prot)
+        
         instrucao_tempo = "Refeição vapt-vupt de 15 até 30 min." if tempo == 'rapido' else "Pode sugerir preparos mais elaborados."
 
         prompt = f"""
