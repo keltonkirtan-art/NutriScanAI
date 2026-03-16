@@ -207,98 +207,97 @@
 
     </main>
 
-    <script> 
-        async function gerarReceita() {
-        // 1. Captura os Elementos Visuais da Tela
-        const area = document.getElementById('resultado-area');
-        const loading = document.getElementById('loading');
-        const conteudo = document.getElementById('conteudo-receita');
-        const btn = document.getElementById('btn-gerar');
-
-        // 2. Captura os Dados Básicos da Dieta
-        // Captura APENAS a geladeira
-        const ingredientesGeladeira = document.getElementById('ingredientes_geladeira').value;
-        const restricoes = document.getElementById('restricoes').value;
-
-        // ATENÇÃO: Se o usuário não digitar nada, a função para aqui (Validação)
-       if (!ingredientesGeladeira) {
-            alert("Por favor, informe o que você tem na geladeira!");
-            return;
-        }
-
-        // Variável que será enviada ao Python
-        const ingredientes = ingredientesGeladeira;
-
-        // 3. Captura as Configurações (Tempo e Anamnese Clínica)
-        const tempo = document.querySelector('input[name="tempo"]:checked').value;
-        const objetivo = document.getElementById('objetivo').value;
-        const sexo = document.getElementById('sexo').value;
-        const idade = document.getElementById('idade').value || 30; // 30 é o fallback (padrão)
-        const peso = document.getElementById('peso').value || 70;
-        const altura = document.getElementById('altura').value || 170;
-
-        // Muda o visual do botão para mostrar que está carregando
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> GERANDO...';
-        btn.disabled = true;
-        area.classList.remove('hidden');
-        loading.classList.remove('hidden');
-        conteudo.innerHTML = "";
-
-        try {
-            const response = await fetch('/gerar-receita', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                // 4. Envia TODOS os dados capturados para o Python
-                body: JSON.stringify({ ingredientes, objetivo, restricoes, tempo, sexo, idade, peso, altura })
-            });
-        
-        // ... (resto do código continua igual)
-
-                const data = await response.json();
-
-                if (data.receita) {
-                    // A IA já retorna HTML formatado conforme pedimos no prompt
-                    loading.classList.add('hidden');
-                    conteudo.innerHTML = data.receita;
-                } else {
-                    throw new Error(data.error || "Erro desconhecido");
+   <script> 
+        // LÓGICA DO CHECKLIST INTERATIVO
+        document.getElementById('resultado-area').addEventListener('change', function(e) {
+            if (e.target && e.target.type === 'checkbox') {
+                const itemLista = e.target.closest('div.flex') || e.target.closest('li');
+                if(itemLista){
+                    const textoItem = itemLista.querySelector('p') || itemLista.querySelector('span'); 
+                    if (textoItem) {
+                        if (e.target.checked) {
+                            textoItem.classList.add('line-through', 'text-gray-400');
+                        } else {
+                            textoItem.classList.remove('line-through', 'text-gray-400');
+                        }
+                    }
                 }
-            } catch (error) {
-                loading.classList.add('hidden');
-                conteudo.innerHTML = `<p class="text-red-500">Erro ao gerar: ${error.message}</p>`;
-            } finally {
-                btn.disabled = false;
             }
-        }
-        // Função para gerar plano semanal (simulada, pois o backend ainda não tem essa rota)
-        async function gerarPlanoSemanal() {
-            // 1. Captura os Elementos da Interface
+        });
+
+        // 1. FUNÇÃO RECEITA ÚNICA (FREEMIUM)
+        async function gerarReceita() {
             const area = document.getElementById('resultado-area');
             const loading = document.getElementById('loading');
             const conteudo = document.getElementById('conteudo-receita');
+            const btn = document.getElementById('btn-gerar');
+
+            // Captura APENAS a geladeira
+            const ingredientesGeladeira = document.getElementById('ingredientes_geladeira').value;
+            const restricoes = document.getElementById('restricoes').value;
             
-            // 2. Captura os Dados Básicos
+            if (!ingredientesGeladeira) {
+                alert("Por favor, informe o que você tem na geladeira!");
+                return;
+            }
+
+            const ingredientes = ingredientesGeladeira; // Para a rota
+
+            // Captura a Anamnese
+            const tempo = document.querySelector('input[name="tempo"]:checked').value;
+            const objetivo = document.getElementById('objetivo').value;
+            const sexo = document.getElementById('sexo').value;
+            const idade = document.getElementById('idade').value || 30;
+            const peso = document.getElementById('peso').value || 70;
+            const altura = document.getElementById('altura').value || 170;
+
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> GERANDO...';
+            btn.disabled = true;
+            area.classList.remove('hidden');
+            loading.classList.remove('hidden');
+            conteudo.innerHTML = "";
+
+            try {
+                const response = await fetch('/gerar-receita', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ingredientes, objetivo, restricoes, tempo, sexo, idade, peso, altura })
+                });
+
+                const data = await response.json();
+                
+                if (data.receita) {
+                    conteudo.innerHTML = data.receita;
+                } else {
+                    throw new Error(data.error || "Erro desconhecido no servidor.");
+                }
+            } catch (error) {
+                conteudo.innerHTML = `<p class="text-red-500 font-bold">Erro ao gerar: ${error.message}</p>`;
+            } finally {
+                loading.classList.add('hidden');
+                btn.innerHTML = '<span class="font-bold text-sm"><i class="fas fa-utensils mr-1"></i> RECEITA ÚNICA</span><span class="text-[10px] font-normal opacity-80 mt-1">O que tem na geladeira</span>';
+                btn.disabled = false;
+            }
+        }
+
+        // 2. FUNÇÃO PLANO SEMANAL (PRO)
+        async function gerarPlanoSemanal() {
+            const area = document.getElementById('resultado-area');
+            const loading = document.getElementById('loading');
+            const conteudo = document.getElementById('conteudo-receita');
+            const btn = document.getElementById('btn-semanal');
+            
             // Captura AMBOS os campos
             const ingredientesGeladeira = document.getElementById('ingredientes_geladeira').value;
             const ingredientesPreferencias = document.getElementById('ingredientes_preferencias').value;
             const restricoes = document.getElementById('restricoes').value;
-            const tempo = document.querySelector('input[name="tempo"]:checked').value;
 
-        if (!ingredientesGeladeira && !ingredientesPreferencias) {
-            alert("Para o plano da semana, preencha o que tem na geladeira ou suas preferências!");
-            return;
-        }
-            
+            if (!ingredientesGeladeira && !ingredientesPreferencias) {
+                alert("Para o plano da semana, preencha o que tem na geladeira ou suas preferências!");
+                return;
+            }
 
-            // 3. Captura a Anamnese Clínica (Perfil Biológico)
-            const objetivo = document.getElementById('objetivo').value;
-            const sexo = document.getElementById('sexo').value;
-            const idade = document.getElementById('idade').value || 30; // 30 como padrão se vazio
-            const peso = document.getElementById('peso').value || 70; // 70kg como padrão
-            const altura = document.getElementById('altura').value || 170; // 170cm como padrão
-
-            // 4. Validação: Impede de rodar se não tiver ingredientes
-           // Soma as informações para a IA ser mais inteligente
+            // Soma a geladeira com as preferências
             let ingredientesCombinados = "";
             if (ingredientesGeladeira) {
                 ingredientesCombinados += "Tenho em casa: " + ingredientesGeladeira + ". ";
@@ -306,16 +305,23 @@
             if (ingredientesPreferencias) {
                 ingredientesCombinados += "Gosto também de incluir na semana: " + ingredientesPreferencias + ".";
             }
-
-            // A variável que vai para o Python agora é a soma!
             const ingredientes = ingredientesCombinados;
-            // 5. Prepara a Tela (Mostra o Loading)
+
+            // Captura a Anamnese
+            const tempo = document.querySelector('input[name="tempo"]:checked').value;
+            const objetivo = document.getElementById('objetivo').value;
+            const sexo = document.getElementById('sexo').value;
+            const idade = document.getElementById('idade').value || 30;
+            const peso = document.getElementById('peso').value || 70;
+            const altura = document.getElementById('altura').value || 170;
+
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> MONTANDO DIETA...';
+            btn.disabled = true;
             area.classList.remove('hidden');
             loading.classList.remove('hidden');
             conteudo.innerHTML = "";
 
             try {
-                // 6. Envia tudo para o Python
                 const response = await fetch('/gerar-plano-semanal', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -323,28 +329,31 @@
                 });
 
                 const data = await response.json();
-                loading.classList.add('hidden');
-        
-        // ... (resto do seu código, onde você injeta a resposta na tela)
                 
-                // Aqui simulamos o "Gatilho de Venda"
-                conteudo.innerHTML = `
-                    <div class="bg-gradient-to-r from-yellow-500 to-yellow-600 text-white p-3 rounded-lg text-center mb-6 font-bold animate-pulse">
-                        ⭐ VOCÊ ESTÁ ACESSANDO UMA PRÉVIA DO MODO PRO ⭐
-                    </div>
-                    ${data.plano}
-                `;
+                if(data.plano) {
+                    conteudo.innerHTML = `
+                        <div class="bg-gradient-to-r from-red-600 to-red-800 text-white p-3 rounded-lg text-center mb-6 font-bold shadow-md">
+                            ⭐ MODO PRO: SEU PLANEJAMENTO COMPLETO ⭐
+                        </div>
+                        ${data.plano}
+                    `;
+                } else {
+                    throw new Error(data.error || "Erro ao processar o plano.");
+                }
             } catch (error) {
+                conteudo.innerHTML = `<p class="text-red-500 font-bold">Erro: ${error.message}</p>`;
+            } finally {
                 loading.classList.add('hidden');
-                conteudo.innerHTML = `<p class="text-red-500">Erro: ${error.message}</p>`;
+                btn.innerHTML = '<span class="font-bold text-sm"><i class="fas fa-calendar-alt mr-1"></i> PLANO 7 DIAS</span><span class="text-[10px] font-normal opacity-80 mt-1">Cardápio + Lista de Compras</span>';
+                btn.disabled = false;
             }
         }
-        // Função para baixar PDF usando html2pdf.js
+
+        // 3. FUNÇÃO DE GERAR PDF (Restaurada com sucesso!)
         function baixarPDF() {
             const elemento = document.getElementById('conteudo-receita');
-            const btn = event.currentTarget; // Pega o botão clicado
+            const btn = event.currentTarget; 
             
-            // Feedback visual no botão
             const textoOriginal = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> GERANDO...';
             btn.disabled = true;
@@ -362,26 +371,6 @@
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
-            // Ativa o checklist interativo na Lista de Compras
-            document.getElementById('resultado-area').addEventListener('change', function(e) {
-                // Verifica se o que foi clicado foi um checkbox
-                if (e.target && e.target.type === 'checkbox') {
-                    const itemLista = e.target.closest('li'); // Pega a linha do item
-                    const textoItem = itemLista.querySelector('span'); // Pega o texto
-                    
-                    if (itemLista && textoItem) {
-                        if (e.target.checked) {
-                            // Riscado e esmaecido quando marcado
-                            textoItem.classList.add('line-through', 'text-gray-400');
-                        } else {
-                            // Volta ao normal quando desmarcado
-                            textoItem.classList.remove('line-through', 'text-gray-400');
-                        }
-                    }
-                }
-            });
-
-            // Execução com tratamento de promessa para mobile
             html2pdf().set(opt).from(elemento).save().then(() => {
                 btn.innerHTML = textoOriginal;
                 btn.disabled = false;
