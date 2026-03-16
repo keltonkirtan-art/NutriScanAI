@@ -140,15 +140,21 @@
                     </div>
                 </div>
 
-                <div>
-                    <label class="block text-sm font-semibold mb-1">Restrições Alimentares:</label>
-                    <input type="text" id="restricoes" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none" placeholder="Ex: Sem glúten, Vegano, Sem lactose...">
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold mb-1 text-teal-900">Ingredientes na Geladeira:</label>
+                    <p class="text-xs text-gray-500 mb-2">O que você tem agora para a refeição de hoje?</p>
+                    <textarea id="ingredientes_geladeira" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none" rows="2" placeholder="Ex: Dois ovos, 100g de tilápia, rúcula..."></textarea>
                 </div>
 
-                <div>
-                    <label class="block text-sm font-semibold mb-1 text-teal-900">Ingredientes ou Preferências:</label>
-                    <p class="text-xs text-gray-500 mb-2">Para Plano 7 dias: O que você gosta de comer?</p>
-                    <textarea id="ingredientes" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none" rows="3" placeholder="Ex: Frango, batata doce, ovos, abacate..."></textarea>
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold mb-1 text-teal-900">Preferências para a Semana (PRO):</label>
+                    <p class="text-xs text-gray-500 mb-2">O que mais você gosta de comer além do que já tem?</p>
+                    <textarea id="ingredientes_preferencias" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none" rows="2" placeholder="Ex: Frango, batata doce, abacate..."></textarea>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold mb-1 text-teal-900">Restrições Alimentares:</label>
+                    <input type="text" id="restricoes" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none" placeholder="Ex: Sem glúten, Vegano, Sem lactose...">
                 </div>
 
                 <div class="flex gap-3 mt-6 no-print">
@@ -210,14 +216,18 @@
         const btn = document.getElementById('btn-gerar');
 
         // 2. Captura os Dados Básicos da Dieta
-        const ingredientes = document.getElementById('ingredientes').value;
+        // Captura APENAS a geladeira
+        const ingredientesGeladeira = document.getElementById('ingredientes_geladeira').value;
         const restricoes = document.getElementById('restricoes').value;
-        
+
         // ATENÇÃO: Se o usuário não digitar nada, a função para aqui (Validação)
-        if (!ingredientes) {
-            alert("Por favor, informe os ingredientes!");
+       if (!ingredientesGeladeira) {
+            alert("Por favor, informe o que você tem na geladeira!");
             return;
         }
+
+        // Variável que será enviada ao Python
+        const ingredientes = ingredientesGeladeira;
 
         // 3. Captura as Configurações (Tempo e Anamnese Clínica)
         const tempo = document.querySelector('input[name="tempo"]:checked').value;
@@ -268,9 +278,17 @@
             const conteudo = document.getElementById('conteudo-receita');
             
             // 2. Captura os Dados Básicos
-            const ingredientes = document.getElementById('ingredientes').value;
+            // Captura AMBOS os campos
+            const ingredientesGeladeira = document.getElementById('ingredientes_geladeira').value;
+            const ingredientesPreferencias = document.getElementById('ingredientes_preferencias').value;
             const restricoes = document.getElementById('restricoes').value;
             const tempo = document.querySelector('input[name="tempo"]:checked').value;
+
+        if (!ingredientesGeladeira && !ingredientesPreferencias) {
+            alert("Para o plano da semana, preencha o que tem na geladeira ou suas preferências!");
+            return;
+        }
+            
 
             // 3. Captura a Anamnese Clínica (Perfil Biológico)
             const objetivo = document.getElementById('objetivo').value;
@@ -280,11 +298,17 @@
             const altura = document.getElementById('altura').value || 170; // 170cm como padrão
 
             // 4. Validação: Impede de rodar se não tiver ingredientes
-            if (!ingredientes) {
-                alert("Para o plano semanal, preciso saber suas preferências ou o que tem na geladeira!");
-                return;
+           // Soma as informações para a IA ser mais inteligente
+            let ingredientesCombinados = "";
+            if (ingredientesGeladeira) {
+                ingredientesCombinados += "Tenho em casa: " + ingredientesGeladeira + ". ";
+            }
+            if (ingredientesPreferencias) {
+                ingredientesCombinados += "Gosto também de incluir na semana: " + ingredientesPreferencias + ".";
             }
 
+            // A variável que vai para o Python agora é a soma!
+            const ingredientes = ingredientesCombinados;
             // 5. Prepara a Tela (Mostra o Loading)
             area.classList.remove('hidden');
             loading.classList.remove('hidden');
