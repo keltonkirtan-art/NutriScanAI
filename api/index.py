@@ -51,7 +51,8 @@ def gerar():
             
         meta_proteina = round(peso * fator_prot)
         
-        instrucao_tempo = "Refeição vapt-vupt de 15 até 30 min." if tempo == 'rapido' else "Pode sugerir preparos mais elaborados."
+        # 👇 AQUI ESTÁ A MÁGICA DO UPGRADE (Instruções muito mais exigentes para a IA) 👇
+        instrucao_tempo = "FOCO EM PRATICIDADE MÁXIMA: Refeição vapt-vupt de 15 até 30 min. Faça descrições curtas e diretas ao ponto." if tempo == 'rapido' else "FOCO EM ALTA GASTRONOMIA: Experiência 'Chef Pro' sem pressa. Crie um passo a passo EXTENSO e altamente detalhado. Descreva preparos longos, explique as técnicas culinárias utilizadas (como selagem, deglaçagem, marinadas ou reduções) e dê dicas de empratamento dignas de restaurante."
 
         prompt = f"""
         Aja como um Nutricionista Clínico (pós-graduado em Nutrição Esportiva e Gastronomia) e Designer de UI.
@@ -134,7 +135,7 @@ def gerar_semanal():
         Restrições: {restricoes}.
         
         ESTRATÉGIA DE TEMPO ({tempo.upper()}):
-        { "Sugira receitas que usem a mesma base (ex: cozinhar frango para 2 dias ou 'batch cooking') para otimizar o tempo na cozinha." if tempo == 'rapido' else "Foque em variedade gourmet e técnicas gastronômicas diversas." }
+        { "PRATICIDADE MÁXIMA: Sugira receitas curtas que usem a mesma base (ex: 'batch cooking', cozinhar para 2 dias) para otimizar o tempo na cozinha. Textos mais enxutos." if tempo == 'rapido' else "ALTA GASTRONOMIA ('CHEF PRO'): O Modo de Preparo deve ser MUITO MAIS LONGO e detalhado do que o normal. Foque em variedade gourmet, explique os tempos de marinada, processos de cocção lenta, reduções de molhos e empratamento." }
 
         REGRAS DE CONTEÚDO:
         1. VARIEDADE: Não use apenas os itens listados. Adicione vegetais, diferentes fontes de fibras e gorduras boas.
