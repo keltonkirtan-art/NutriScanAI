@@ -539,6 +539,7 @@
 
         // 3. FUNÇÃO DE GERAR PDF (Restaurada com sucesso!)
 
+       // 3. FUNÇÃO DE GERAR PDF (Blindada contra erro de sintaxe e tela em branco)
         function baixarPDF() {
             const elemento = document.getElementById('conteudo-receita');
             const btn = event.currentTarget; 
@@ -555,9 +556,10 @@
                     scale: 2, 
                     useCORS: true, 
                     logging: false,
-                    letterRendering: true 
-                    // AS DUAS LINHAS QUE SALVAM O SEU PDF ESTÃO AQUI 👇
-                    
+                    letterRendering: true, // ⚠️ ESTA VÍRGULA AQUI É OBRIGATÓRIA!
+                    scrollY: 0,
+                    windowWidth: document.documentElement.offsetWidth, // Lê a tela inteira
+                    windowHeight: document.documentElement.offsetHeight // Evita corte no mobile
                 },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
