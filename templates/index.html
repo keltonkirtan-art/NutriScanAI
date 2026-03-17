@@ -16,17 +16,54 @@
         #conteudo-receita li { @apply flex items-start mb-2 before:content-['•'] before:text-teal-500 before:font-bold before:mr-2; }
         
         @media print { 
-            body * { visibility: hidden; }
-            #resultado-area, #resultado-area *, #conteudo-receita, #conteudo-receita * { visibility: visible; }
-            #resultado-area { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0; }
-            .no-print { display: none !important; }
+            /* Esconde tudo que não é a receita */
+            body * {
+                visibility: hidden;
+            }
+            
+            /* Mostra apenas a área da receita e seus filhos */
+            #resultado-area, #resultado-area *, #conteudo-receita, #conteudo-receita * {
+                visibility: visible;
+            }
+
+            /* Posiciona a receita no topo da página de impressão */
+            #resultado-area {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                margin: 0;
+                padding: 0;
+            }
+
+            /* Esconde os botões de ação dentro da área de resultado no PDF */
+            .no-print {
+                display: none !important;
+            }
+
+            /* Ajuste para não cortar páginas no meio de parágrafos */
             h2, h3 { page-break-after: avoid; }
             div, p { page-break-inside: auto; }
         }
-        
-        input[type="checkbox"] { min-width: 20px; min-height: 20px; margin-top: 2px; }
-        #conteudo-receita p { text-align: justify; hyphens: auto; }
-        #conteudo-receita strong { display: inline-block; margin-bottom: 2px; }
+        /* Garante que o checkbox não "esmague" o texto */
+        input[type="checkbox"] {
+            min-width: 20px;
+            min-height: 20px;
+            margin-top: 2px;
+        }
+
+        /* Melhora a legibilidade do texto gerado pela IA */
+        #conteudo-receita p {
+            text-align: justify;
+            hyphens: auto;
+        }
+
+        /* Ajuste para que títulos longos não quebrem o layout */
+        #conteudo-receita strong {
+            display: inline-block;
+            margin-bottom: 2px;
+        }
+
     </style>
 </head>
 <body class="bg-gray-50 font-sans text-gray-800">
@@ -146,7 +183,7 @@
             
             <button onclick="abrirModalLogin()" id="btn-semanal" class="relative flex-1 bg-gray-200 text-gray-500 py-3 px-4 rounded-xl border-b-4 border-gray-300 flex flex-col items-center justify-center overflow-hidden hover:bg-gray-300 transition">
                 <div class="absolute top-0 right-0 bg-red-600 text-white text-[9px] font-extrabold px-2 py-0.5 rounded-bl-lg tracking-wider">PRO</div>
-                <span class="font-bold text-sm text-white"><i class="fas fa-lock mr-1 text-slate-400"></i> PLANO 7 DIAS</span>
+                <span class="font-bold text-sm text-white-600"><i class="fas fa-lock mr-1 text-slate-400"></i> PLANO 7 DIAS</span>
                 <span class="text-[10px] font-normal mt-1 text-gray-500">Cardápio + Lista de Compras</span>
             </button>
         </div>
