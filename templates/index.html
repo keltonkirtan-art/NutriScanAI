@@ -76,7 +76,7 @@
         </div>
     </header>
 
-    <main class="container mx-auto px-4 py-8 max-w-2xl">
+        <main class="container mx-auto px-4 py-8 max-w-2xl">
         
         <section class="mb-8 text-center">
             <h2 class="text-2xl font-extrabold text-teal-900">O que temos para hoje?</h2>
@@ -86,7 +86,7 @@
 
 	    
 
-	<div class="relative mb-6">
+	    <div class="relative mb-6">
     
         <div id="paywall-overlay" class="absolute inset-0 z-10 bg-white/60 backdrop-blur-[3px] rounded-xl flex flex-col items-center justify-center border-2 border-dashed border-teal-400 shadow-inner">
             <div class="bg-white p-4 rounded-full shadow-lg mb-3">
@@ -272,21 +272,23 @@
         // 2. FUNÇÕES DE TRAVA E DESTRAVA (PAYWALL)
         // ==========================================
         function bloquearModoPro() {
-            // Mostra o cadeado e embaraça o formulário clínico
             document.getElementById('paywall-overlay').classList.remove('hidden');
             document.getElementById('painel-clinico').classList.add('opacity-30', 'pointer-events-none', 'select-none');
             
-            // Muda o botão de login lá em cima
-            document.getElementById('btn-login-header').innerHTML = 'ENTRAR / SEJA PRO';
+            // Botão pede para fazer Login
+            const btnHeader = document.getElementById('btn-login-header');
+            btnHeader.innerHTML = 'SEJA PRO';
+            btnHeader.setAttribute('onclick', 'abrirModalLogin()');
         }
 
         function desbloquearModoPro() {
-            // Esconde o cadeado e libera o formulário clínico
             document.getElementById('paywall-overlay').classList.add('hidden');
             document.getElementById('painel-clinico').classList.remove('opacity-30', 'pointer-events-none', 'select-none');
             
-            // Muda o botão de login para mostrar que está logado
-            document.getElementById('btn-login-header').innerHTML = '<i class="fas fa-user-check mr-1"></i> MINHA CONTA';
+            // Botão vira o "Sair da Conta"
+            const btnHeader = document.getElementById('btn-login-header');
+            btnHeader.innerHTML = '<i class="fas fa-sign-out-alt mr-1"></i> SAIR';
+            btnHeader.setAttribute('onclick', 'fazerLogout()');
         }
 
         // Executa a verificação assim que o site abre
@@ -465,6 +467,82 @@
                 btn.disabled = false;
             });
         }
+
+        // ==========================================
+        // 3. FUNÇÕES DO MODAL DE LOGIN (SUPABASE)
+        // ==========================================
+
+        // Abrir e Fechar o Modal
+        function abrirModalLogin() {
+            document.getElementById('modal-login').classList.remove('hidden');
+        }
+
+        function fecharModalLogin() {
+            document.getElementById('modal-login').classList.add('hidden');
+        }
+
+        // 🔐 Função de Cadastro (Cria a conta)
+        async function fazerCadastro() {
+            const email = document.getElementById('login-email').value;
+            const senha = document.getElementById('login-senha').value;
+
+            if (!email || !senha) {
+                alert("Por favor, preencha seu e-mail e crie uma senha!");
+                return;
+            }
+
+            // Envia para o Supabase
+            const { data, error } = await supabase.auth.signUp({
+                email: email,
+                password: senha,
+            });
+
+            if (error) {
+                alert("Erro ao criar conta: " + error.message);
+            } else {
+                alert("Conta criada com sucesso! O Supabase enviou um e-mail de confirmação para você. Clique no link do e-mail para validar a conta.");
+                fecharModalLogin();
+            }
+        }
+
+        // 🔑 Função de Login (Acessa a conta)
+        async function fazerLogin() {
+            const email = document.getElementById('login-email').value;
+            const senha = document.getElementById('login-senha').value;
+
+            if (!email || !senha) {
+                alert("Por favor, digite seu e-mail e senha!");
+                return;
+            }
+
+            // Autentica no Supabase
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: email,
+                password: senha,
+            });
+
+            if (error) {
+                alert("Erro no login: E-mail ou senha incorretos.");
+            } else {
+                alert("Bem-vindo ao NutriScan PRO!");
+                fecharModalLogin();
+                // NOTA: O cadeado vai sumir sozinho porque criamos aquele "verificarSessao()" 
+                // que fica escutando o login e aciona o desbloquearModoPro() automaticamente!
+            }
+        }
+
+        // 🚪 Função de Logout (Sair da conta)
+        async function fazerLogout() {
+            const { error } = await supabase.auth.signOut();
+            if (error) {
+                console.error("Erro ao sair:", error);
+            } else {
+                alert("Você saiu da sua conta.");
+                // O cadeado volta a aparecer automaticamente
+                window.location.reload(); 
+            }
+        }
+
     </script>
         <div id="modal-login" class="fixed inset-0 z-[100] hidden bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4">
             <div class="bg-white w-full max-w-sm rounded-3xl p-8 shadow-2xl relative">
