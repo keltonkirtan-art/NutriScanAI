@@ -7,60 +7,26 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <style>
         #conteudo-receita h2 { @apply text-2xl font-bold text-teal-800 mb-4; }
         #conteudo-receita ul { @apply list-none p-0; }
         #conteudo-receita li { @apply flex items-start mb-2 before:content-['•'] before:text-teal-500 before:font-bold before:mr-2; }
         
         @media print { 
-            /* Esconde tudo que não é a receita */
-            body * {
-                visibility: hidden;
-            }
-            
-            /* Mostra apenas a área da receita e seus filhos */
-            #resultado-area, #resultado-area *, #conteudo-receita, #conteudo-receita * {
-                visibility: visible;
-            }
-
-            /* Posiciona a receita no topo da página de impressão */
-            #resultado-area {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-                margin: 0;
-                padding: 0;
-            }
-
-            /* Esconde os botões de ação dentro da área de resultado no PDF */
-            .no-print {
-                display: none !important;
-            }
-
-            /* Ajuste para não cortar páginas no meio de parágrafos */
+            body * { visibility: hidden; }
+            #resultado-area, #resultado-area *, #conteudo-receita, #conteudo-receita * { visibility: visible; }
+            #resultado-area { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0; }
+            .no-print { display: none !important; }
             h2, h3 { page-break-after: avoid; }
             div, p { page-break-inside: auto; }
         }
-        /* Garante que o checkbox não "esmague" o texto */
-        input[type="checkbox"] {
-            min-width: 20px;
-            min-height: 20px;
-            margin-top: 2px;
-        }
-
-        /* Melhora a legibilidade do texto gerado pela IA */
-        #conteudo-receita p {
-            text-align: justify;
-            hyphens: auto;
-        }
-
-        /* Ajuste para que títulos longos não quebrem o layout */
-        #conteudo-receita strong {
-            display: inline-block;
-            margin-bottom: 2px;
-        }
+        
+        input[type="checkbox"] { min-width: 20px; min-height: 20px; margin-top: 2px; }
+        #conteudo-receita p { text-align: justify; hyphens: auto; }
+        #conteudo-receita strong { display: inline-block; margin-bottom: 2px; }
     </style>
 </head>
 <body class="bg-gray-50 font-sans text-gray-800">
@@ -70,144 +36,135 @@
             <h1 class="text-xl font-bold tracking-tight">
                 <span class="text-teal-400">NutrIdeias</span> IA
             </h1>
-           <button id="btn-login-header" onclick="abrirModalLogin()" class="bg-red-600 text-white px-4 py-1 rounded-full text-sm font-bold hover:bg-red-700 transition shadow-[0_0_10px_rgba(220,38,38,0.5)]">
+            <button id="btn-login-header" onclick="abrirModalLogin()" class="bg-red-600 text-white px-4 py-1 rounded-full text-sm font-bold hover:bg-red-700 transition shadow-[0_0_10px_rgba(220,38,38,0.5)]">
                 SEJA PRO
-            </button>           
+            </button>
         </div>
     </header>
 
-        <main class="container mx-auto px-4 py-8 max-w-2xl">
+    <main class="container mx-auto px-4 py-8 max-w-2xl">
         
         <section class="mb-8 text-center">
             <h2 class="text-2xl font-extrabold text-teal-900">O que temos para hoje?</h2>
             <p class="text-gray-600">Digite seus ingredientes e veja as ideias mais nutritivas e saborosas para você.</p>
         </section>
 
-
-	    
-
-	    <div class="relative mb-6">
-    
-        <div id="paywall-overlay" class="absolute inset-0 z-10 bg-white/60 backdrop-blur-[3px] rounded-xl flex flex-col items-center justify-center border-2 border-dashed border-teal-400 shadow-inner">
-            <div class="bg-white p-4 rounded-full shadow-lg mb-3">
-                <i class="fas fa-lock text-3xl text-teal-600"></i>
-            </div>
-            <h4 class="font-extrabold text-slate-800 text-lg">Função Exclusiva PRO</h4>
-            <p class="text-xs text-gray-600 mb-4 px-8 text-center">Desbloqueie o cálculo de IMC, TMB e a prescrição exata de macronutrientes.</p>
-            <button onclick="abrirModalLogin()" class="bg-red-600 text-white px-6 py-2 rounded-full text-sm font-bold hover:bg-red-700 transition shadow-[0_0_15px_rgba(220,38,38,0.4)] animate-pulse">
-                DESBLOQUEAR AGORA
-            </button>
-        </div>
-
-        <div id="painel-clinico" class="opacity-30 pointer-events-none select-none bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-            <h3 class="text-sm font-bold text-teal-800 mb-3 border-b border-gray-100 pb-2">
-                <i class="fas fa-notes-medical mr-1"></i> Perfil Biológico (PRO)
-            </h3>
+        <div class="relative mb-6">
             
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
-                <div>
-                    <label class="block text-xs font-bold mb-1 text-slate-700">Sexo:</label>
-                    <select id="sexo" class="w-full p-2 border border-gray-200 rounded-lg text-sm bg-gray-50">
-                        <option value="masculino">Masculino</option>
-                        <option value="feminino">Feminino</option>
-                    </select>
+            <div id="paywall-overlay" class="absolute inset-0 z-10 bg-white/60 backdrop-blur-[3px] rounded-xl flex flex-col items-center justify-center border-2 border-dashed border-teal-400 shadow-inner">
+                <div class="bg-white p-4 rounded-full shadow-lg mb-3">
+                    <i class="fas fa-lock text-3xl text-teal-600"></i>
                 </div>
-                <div>
-                    <label class="block text-xs font-bold mb-1 text-slate-700">Idade:</label>
-                    <input type="number" id="idade" class="w-full p-2 border border-gray-200 rounded-lg text-sm bg-gray-50" placeholder="Ex: 35">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold mb-1 text-slate-700">Peso (kg):</label>
-                    <input type="number" id="peso" step="0.1" class="w-full p-2 border border-gray-200 rounded-lg text-sm bg-gray-50" placeholder="Ex: 88.5">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold mb-1 text-slate-700">Altura (cm):</label>
-                    <input type="number" id="altura" class="w-full p-2 border border-gray-200 rounded-lg text-sm bg-gray-50" placeholder="Ex: 175">
-                </div>
+                <h4 class="font-extrabold text-slate-800 text-lg">Função Exclusiva PRO</h4>
+                <p class="text-xs text-gray-600 mb-4 px-8 text-center">Desbloqueie o cálculo de IMC, TMB e a prescrição exata de macronutrientes.</p>
+                <button onclick="abrirModalLogin()" class="bg-red-600 text-white px-6 py-2 rounded-full text-sm font-bold hover:bg-red-700 transition shadow-[0_0_15px_rgba(220,38,38,0.4)] animate-pulse">
+                    DESBLOQUEAR AGORA
+                </button>
             </div>
 
-            <div>
-                <label class="block text-xs font-bold mb-1 text-slate-700">Objetivo:</label>
-                <select id="objetivo" class="w-full p-2 border border-gray-200 rounded-lg text-sm bg-gray-50">
-                    <option value="emagrecimento">Emagrecimento (Déficit Calórico)</option>
-                    <option value="hipertrofia">Hipertrofia (Superávit Calórico)</option>
-                    <option value="manutencao">Manutenção (Normocalórica)</option>
-                    <option value="performance">Performance Esportiva</option>
-                </select>
-            </div>
-        </div>
-    </div>
-
-		
-
-                <div class="mb-4">
-                    <label class="block text-sm font-semibold mb-2 text-teal-900">Tempo Disponível:</label>
-                    <div class="grid grid-cols-2 gap-2">
-                        <label class="cursor-pointer">
-                            <input type="radio" name="tempo" value="rapido" class="peer hidden" checked>
-                            <div class="text-center p-2 rounded-xl border-2 border-gray-100 peer-checked:border-teal-500 peer-checked:bg-teal-50 hover:bg-gray-50 transition">
-                                <span class="block font-bold text-sm text-teal-800">⚡ Vapt-Vupt</span>
-                                <span class="text-[10px] text-gray-500">Até 15-30 min</span>
-                            </div>
-                        </label>
-                        <label class="cursor-pointer">
-                            <input type="radio" name="tempo" value="elaborado" class="peer hidden">
-                            <div class="text-center p-2 rounded-xl border-2 border-gray-100 peer-checked:border-teal-500 peer-checked:bg-teal-50 hover:bg-gray-50 transition">
-                                <span class="block font-bold text-sm text-teal-800">👨‍🍳 Chef Pro</span>
-                                <span class="text-[10px] text-gray-500">Sem pressa</span>
-                            </div>
-                        </label>
+            <div id="painel-clinico" class="opacity-30 pointer-events-none select-none bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                <h3 class="text-sm font-bold text-teal-800 mb-3 border-b border-gray-100 pb-2">
+                    <i class="fas fa-notes-medical mr-1"></i> Perfil Biológico (PRO)
+                </h3>
+                
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+                    <div>
+                        <label class="block text-xs font-bold mb-1 text-slate-700">Sexo:</label>
+                        <select id="sexo" class="w-full p-2 border border-gray-200 rounded-lg text-sm bg-gray-50">
+                            <option value="masculino">Masculino</option>
+                            <option value="feminino">Feminino</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold mb-1 text-slate-700">Idade:</label>
+                        <input type="number" id="idade" class="w-full p-2 border border-gray-200 rounded-lg text-sm bg-gray-50" placeholder="Ex: 35">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold mb-1 text-slate-700">Peso (kg):</label>
+                        <input type="number" id="peso" step="0.1" class="w-full p-2 border border-gray-200 rounded-lg text-sm bg-gray-50" placeholder="Ex: 88.5">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold mb-1 text-slate-700">Altura (cm):</label>
+                        <input type="number" id="altura" class="w-full p-2 border border-gray-200 rounded-lg text-sm bg-gray-50" placeholder="Ex: 175">
                     </div>
                 </div>
 
-                <div class="mb-4">
-                    <label class="block text-sm font-semibold mb-1 text-teal-900">Ingredientes na Geladeira:</label>
-                    <p class="text-xs text-gray-500 mb-2">O que você tem agora para a refeição de hoje?</p>
-                    <textarea id="ingredientes_geladeira" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none" rows="2" placeholder="Ex: Dois ovos, 100g de tilápia, rúcula..."></textarea>
+                <div>
+                    <label class="block text-xs font-bold mb-1 text-slate-700">Objetivo:</label>
+                    <select id="objetivo" class="w-full p-2 border border-gray-200 rounded-lg text-sm bg-gray-50">
+                        <option value="emagrecimento">Emagrecimento (Déficit Calórico)</option>
+                        <option value="hipertrofia">Hipertrofia (Superávit Calórico)</option>
+                        <option value="manutencao">Manutenção (Normocalórica)</option>
+                        <option value="performance">Performance Esportiva</option>
+                    </select>
                 </div>
+            </div>
+        </div>
 
-                <div class="mb-4">
-                    <label class="block text-sm font-semibold mb-1 text-teal-900">Preferências para a Semana (PRO):</label>
-                    <p class="text-xs text-gray-500 mb-2">O que mais você gosta de comer além do que já tem?</p>
-                    <textarea id="ingredientes_preferencias" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none" rows="2" placeholder="Ex: Frango, batata doce, abacate..."></textarea>
-                </div>
+        <div class="mb-4">
+            <label class="block text-sm font-semibold mb-2 text-teal-900">Tempo Disponível:</label>
+            <div class="grid grid-cols-2 gap-2">
+                <label class="cursor-pointer">
+                    <input type="radio" name="tempo" value="rapido" class="peer hidden" checked>
+                    <div class="text-center p-2 rounded-xl border-2 border-gray-100 peer-checked:border-teal-500 peer-checked:bg-teal-50 hover:bg-gray-50 transition">
+                        <span class="block font-bold text-sm text-teal-800">⚡ Vapt-Vupt</span>
+                        <span class="text-[10px] text-gray-500">Até 15 min</span>
+                    </div>
+                </label>
+                <label class="cursor-pointer">
+                    <input type="radio" name="tempo" value="elaborado" class="peer hidden">
+                    <div class="text-center p-2 rounded-xl border-2 border-gray-100 peer-checked:border-teal-500 peer-checked:bg-teal-50 hover:bg-gray-50 transition">
+                        <span class="block font-bold text-sm text-teal-800">👨‍🍳 Chef Pro</span>
+                        <span class="text-[10px] text-gray-500">Sem pressa</span>
+                    </div>
+                </label>
+            </div>
+        </div>
 
-                <div class="mb-4">
-                    <label class="block text-sm font-semibold mb-1 text-teal-900">Restrições Alimentares:</label>
-                    <input type="text" id="restricoes" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none" placeholder="Ex: Sem glúten, Vegano, Sem lactose...">
-                </div>
+        <div class="mb-4">
+            <label class="block text-sm font-semibold mb-1 text-teal-900">Ingredientes na Geladeira:</label>
+            <p class="text-xs text-gray-500 mb-2">O que você tem agora para a refeição de hoje?</p>
+            <textarea id="ingredientes_geladeira" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none" rows="2" placeholder="Ex: Dois ovos, 100g de tilápia, rúcula..."></textarea>
+        </div>
 
-		
+        <div class="mb-4">
+            <label class="block text-sm font-semibold mb-1 text-teal-900">Preferências para a Semana (PRO):</label>
+            <p class="text-xs text-gray-500 mb-2">O que mais você gosta de comer além do que já tem?</p>
+            <textarea id="ingredientes_preferencias" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none" rows="2" placeholder="Ex: Frango, batata doce, abacate..."></textarea>
+        </div>
 
-	<div class="flex gap-3 mt-6 no-print">
+        <div class="mb-4">
+            <label class="block text-sm font-semibold mb-1 text-teal-900">Restrições Alimentares:</label>
+            <input type="text" id="restricoes" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none" placeholder="Ex: Sem glúten, Vegano, Sem lactose...">
+        </div>
+
+        <div class="flex gap-3 mt-6 no-print">
             <button onclick="gerarReceita()" id="btn-gerar" class="flex-1 bg-teal-600 text-white py-3 px-4 rounded-xl hover:bg-teal-700 transition shadow-md flex flex-col items-center justify-center">
                 <span class="font-bold text-sm"><i class="fas fa-utensils mr-1"></i> RECEITA ÚNICA</span>
-                <span class="text-[10px] font-normal opacity-80 mt-1">Gere com os itens acima</span>
+                <span class="text-[10px] font-normal opacity-80 mt-1">O que tem na geladeira</span>
             </button>
             
-            <button onclick="alert('Assine o Plano PRO para desbloquear a IA de Planejamento Semanal e a Lista de Compras Inteligente!')" id="btn-semanal" class="relative flex-1 bg-gray-200 text-gray-500 py-3 px-4 rounded-xl border-b-4 border-gray-300 flex flex-col items-center justify-center overflow-hidden hover:bg-gray-300 transition">
+            <button onclick="abrirModalLogin()" id="btn-semanal" class="relative flex-1 bg-gray-200 text-gray-500 py-3 px-4 rounded-xl border-b-4 border-gray-300 flex flex-col items-center justify-center overflow-hidden hover:bg-gray-300 transition">
                 <div class="absolute top-0 right-0 bg-red-600 text-white text-[9px] font-extrabold px-2 py-0.5 rounded-bl-lg tracking-wider">PRO</div>
                 <span class="font-bold text-sm text-gray-600"><i class="fas fa-lock mr-1 text-slate-400"></i> PLANO 7 DIAS</span>
                 <span class="text-[10px] font-normal mt-1 text-gray-500">Cardápio + Lista de Compras</span>
             </button>
         </div>
 
-		    
-    
-        <div id="resultado-area" class="hidden space-y-4">
+        <div id="resultado-area" class="hidden mt-8 space-y-4">
             <div class="bg-white rounded-2xl shadow-md p-6 border-l-4 border-teal-500">
                 <div id="loading" class="text-center py-4 hidden">
                     <i class="fas fa-circle-notch fa-spin text-teal-500 text-2xl"></i>
-                    <p class="mt-2 text-sm text-gray-500">Criando sua receita personalizada...</p>
+                    <p class="mt-2 text-sm text-gray-500">Criando sua dieta personalizada...</p>
                 </div>
-                <div id="conteudo-receita" class="prose prose-teal max-w-none">
-                    </div>
+                
+                <div id="conteudo-receita" class="prose prose-teal max-w-none"></div>
+
                 <div class="mt-6 flex gap-2 no-print">
-                    <button onclick="window.print()" class="flex-1 bg-blue-700 text-white py-3 rounded-xl font-bold hover:bg-blue-800 transition shadow-lg">
+                    <button onclick="baixarPDF()" class="w-full bg-blue-700 text-white py-3 rounded-xl font-bold hover:bg-blue-800 transition shadow-lg">
                         <i class="fas fa-print mr-2"></i> IMPRIMIR / SALVAR PDF
                     </button>
                 </div>
-                <div id="conteudo-receita" class="prose max-w-none"></div>
 
                 <div class="mt-12 pt-6 border-t border-gray-300 text-center text-xs text-gray-500 pb-4 page-break-inside-avoid">
                     <p class="mb-2"><i class="fas fa-exclamation-triangle text-amber-500 mr-1"></i> <strong>Aviso Legal (Compliance):</strong> O NutrIdeias IA é uma ferramenta de apoio tecnológico baseada em Inteligência Artificial. Este planejamento tem caráter informativo e estimativo.</p>
@@ -217,48 +174,71 @@
                     </p>
                 </div>
             </div>
-
-            <div class="bg-teal-900 text-white p-6 rounded-2xl flex items-center justify-between">
-                <div>
-                    <h3 class="font-bold">Gostou da sugestão?</h3>
-                    <p class="text-xs text-teal-200">Gere um cardápio para a semana toda e receba a lista de compras!</p>
-                </div>
-                <button class="bg-teal-500 p-2 rounded-lg font-bold text-sm">Ver Plano</button>
-            </div>
         </div>
-
     </main>
 
-   <script> 
-        // ==========================================
-        // 1. CONFIGURAÇÃO DO SUPABASE (BANCO E LOGIN)
-        // ==========================================
-        // Use o link que você vai encontrar no topo da página API do Supabase e a chave "anon public" para autenticação. Ambos são encontrados no painel do Supabase, na seção "Configurações" > "API".
-        const supabaseUrl = 'https://tbmipzwxocrmgmivtkds.supabase.co';
-        // Use o código longo (JWT)
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRibWlwend4b2NybWdtaXZ0a2RzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3MDU2MzAsImV4cCI6MjA4OTI4MTYzMH0.wkU2kEyNoJca6RTR58Zp47V3fr_sLr_LkeXuZswQzN4';
-        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+    <div id="modal-login" class="fixed inset-0 z-[100] hidden bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-8 shadow-2xl relative">
+            <button onclick="fecharModalLogin()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times text-xl"></i>
+            </button>
 
-        // Variável global para sabermos se o usuário é PRO
+            <div class="text-center mb-8">
+                <div class="bg-teal-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-user-astronaut text-teal-600 text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-800">Acesse sua Conta PRO</h3>
+                <p class="text-sm text-gray-500">Libere seu plano semanal completo.</p>
+            </div>
+
+            <div class="space-y-4">
+                <input type="email" id="login-email" placeholder="Seu e-mail" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none">
+                <input type="password" id="login-senha" placeholder="Sua senha" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none">
+                
+                <button onclick="fazerLogin()" class="w-full bg-teal-600 text-white py-3 rounded-xl font-bold hover:bg-teal-700 transition">
+                    ENTRAR AGORA
+                </button>
+                
+                <div class="text-center">
+                    <button onclick="fazerCadastro()" class="text-xs text-teal-600 font-semibold hover:underline">
+                        Não tem conta? Cadastre-se em 10 segundos
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script> 
+        // ==========================================
+        // 1. CONFIGURAÇÃO DO SUPABASE (A CORREÇÃO ESTÁ AQUI!)
+        // ==========================================
+        const supabaseUrl = 'https://tbmipzwxocrmgmivtkds.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRibWlwend4b2NybWdtaXZ0a2RzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3MDU2MzAsImV4cCI6MjA4OTI4MTYzMH0.wkU2kEyNoJca6RTR58Zp47V3fr_sLr_LkeXuZswQzN4';
+        
+        // Criamos a variável com nome clienteSupabase para evitar o erro fatal!
+
+        const clienteSupabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+	// Variável global para sabermos se o usuário é PRO
+
         let usuarioLogado = null;
 
-        // Função que verifica o status do usuário assim que a página carrega
+	// Função que verifica o status do usuário assim que a página carrega
+
         async function verificarSessao() {
-            const { data: { session } } = await supabase.auth.getSession();
-            
+            const { data: { session } } = await clienteSupabase.auth.getSession();
             if (session) {
-                // Usuário está logado!
                 usuarioLogado = session.user;
                 desbloquearModoPro();
             } else {
-                // Visitante anônimo
                 usuarioLogado = null;
                 bloquearModoPro();
             }
         }
 
-        // Fica "escutando" se o usuário fez login ou logout
-        supabase.auth.onAuthStateChange((_event, session) => {
+	// Fica "escutando" se o usuário fez login ou logout
+
+        clienteSupabase.auth.onAuthStateChange((_event, session) => {
             if (session) {
                 usuarioLogado = session.user;
                 desbloquearModoPro();
@@ -271,30 +251,111 @@
         // ==========================================
         // 2. FUNÇÕES DE TRAVA E DESTRAVA (PAYWALL)
         // ==========================================
+
         function bloquearModoPro() {
             document.getElementById('paywall-overlay').classList.remove('hidden');
             document.getElementById('painel-clinico').classList.add('opacity-30', 'pointer-events-none', 'select-none');
             
-            // Botão pede para fazer Login
+	 // Botão pede para fazer Login
+
             const btnHeader = document.getElementById('btn-login-header');
             btnHeader.innerHTML = 'SEJA PRO';
             btnHeader.setAttribute('onclick', 'abrirModalLogin()');
+
+            // Mantém o botão de Plano Semanal bloqueado chamando o modal
+            const btnSemanal = document.getElementById('btn-semanal');
+            btnSemanal.setAttribute('onclick', 'abrirModalLogin()');
+            btnSemanal.classList.add('bg-gray-200', 'text-gray-500');
+            btnSemanal.classList.remove('bg-red-600', 'text-white', 'hover:bg-red-700');
         }
 
         function desbloquearModoPro() {
             document.getElementById('paywall-overlay').classList.add('hidden');
             document.getElementById('painel-clinico').classList.remove('opacity-30', 'pointer-events-none', 'select-none');
             
-            // Botão vira o "Sair da Conta"
+	    // Botão vira o "Sair da Conta"
+
             const btnHeader = document.getElementById('btn-login-header');
             btnHeader.innerHTML = '<i class="fas fa-sign-out-alt mr-1"></i> SAIR';
             btnHeader.setAttribute('onclick', 'fazerLogout()');
+
+            // Libera o botão do Plano Semanal para rodar a IA
+            const btnSemanal = document.getElementById('btn-semanal');
+            btnSemanal.setAttribute('onclick', 'gerarPlanoSemanal()');
+            btnSemanal.classList.remove('bg-gray-200', 'text-gray-500');
+            btnSemanal.classList.add('bg-red-600', 'text-white', 'hover:bg-red-700');
         }
 
-        // Executa a verificação assim que o site abre
-        verificarSessao();
+        // ==========================================
+        // 3. FUNÇÕES DO MODAL DE LOGIN
+        // ==========================================
 
-        // LÓGICA DO CHECKLIST INTERATIVO
+        function abrirModalLogin() {
+            document.getElementById('modal-login').classList.remove('hidden');
+        }
+
+        function fecharModalLogin() {
+            document.getElementById('modal-login').classList.add('hidden');
+        }
+
+        async function fazerCadastro() {
+            const email = document.getElementById('login-email').value;
+            const senha = document.getElementById('login-senha').value;
+
+            if (!email || !senha) {
+                alert("Por favor, preencha seu e-mail e crie uma senha!");
+                return;
+            }
+
+            const { data, error } = await clienteSupabase.auth.signUp({
+                email: email,
+                password: senha,
+            });
+
+            if (error) {
+                alert("Erro ao criar conta: " + error.message);
+            } else {
+                alert("Conta criada com sucesso! Verifique seu e-mail para validar a conta.");
+                fecharModalLogin();
+            }
+        }
+
+        async function fazerLogin() {
+            const email = document.getElementById('login-email').value;
+            const senha = document.getElementById('login-senha').value;
+
+            if (!email || !senha) {
+                alert("Por favor, digite seu e-mail e senha!");
+                return;
+            }
+
+            const { data, error } = await clienteSupabase.auth.signInWithPassword({
+                email: email,
+                password: senha,
+            });
+
+            if (error) {
+                alert("Erro no login: E-mail ou senha incorretos.");
+            } else {
+                alert("Bem-vindo ao NutriScan PRO!");
+                fecharModalLogin();
+            }
+        }
+
+        async function fazerLogout() {
+            const { error } = await clienteSupabase.auth.signOut();
+            if (error) {
+                console.error("Erro ao sair:", error);
+            } else {
+                alert("Você saiu da sua conta.");
+                window.location.reload(); 
+            }
+        }
+
+        // ==========================================
+        // 4. FUNÇÕES DA INTELIGÊNCIA ARTIFICIAL E UI
+        // ==========================================
+
         document.getElementById('resultado-area').addEventListener('change', function(e) {
             if (e.target && e.target.type === 'checkbox') {
                 const itemLista = e.target.closest('div.flex') || e.target.closest('li');
@@ -311,14 +372,16 @@
             }
         });
 
-        // 1. FUNÇÃO RECEITA ÚNICA (FREEMIUM)
+	// 1. FUNÇÃO RECEITA ÚNICA (FREEMIUM)
+
         async function gerarReceita() {
             const area = document.getElementById('resultado-area');
             const loading = document.getElementById('loading');
             const conteudo = document.getElementById('conteudo-receita');
             const btn = document.getElementById('btn-gerar');
 
-            // Captura APENAS a geladeira
+	     // Captura APENAS a geladeira
+
             const ingredientesGeladeira = document.getElementById('ingredientes_geladeira').value;
             const restricoes = document.getElementById('restricoes').value;
             
@@ -327,9 +390,9 @@
                 return;
             }
 
-            const ingredientes = ingredientesGeladeira; // Para a rota
+	     // Captura a Anamnese
 
-            // Captura a Anamnese
+            const ingredientes = ingredientesGeladeira; 
             const tempo = document.querySelector('input[name="tempo"]:checked').value;
             const objetivo = document.getElementById('objetivo').value;
             const sexo = document.getElementById('sexo').value;
@@ -367,13 +430,15 @@
         }
 
         // 2. FUNÇÃO PLANO SEMANAL (PRO)
+
         async function gerarPlanoSemanal() {
             const area = document.getElementById('resultado-area');
             const loading = document.getElementById('loading');
             const conteudo = document.getElementById('conteudo-receita');
             const btn = document.getElementById('btn-semanal');
+	
+	   // Captura AMBOS os campos
             
-            // Captura AMBOS os campos
             const ingredientesGeladeira = document.getElementById('ingredientes_geladeira').value;
             const ingredientesPreferencias = document.getElementById('ingredientes_preferencias').value;
             const restricoes = document.getElementById('restricoes').value;
@@ -383,7 +448,8 @@
                 return;
             }
 
-            // Soma a geladeira com as preferências
+	    // Soma a geladeira com as preferências
+
             let ingredientesCombinados = "";
             if (ingredientesGeladeira) {
                 ingredientesCombinados += "Tenho em casa: " + ingredientesGeladeira + ". ";
@@ -393,7 +459,6 @@
             }
             const ingredientes = ingredientesCombinados;
 
-            // Captura a Anamnese
             const tempo = document.querySelector('input[name="tempo"]:checked').value;
             const objetivo = document.getElementById('objetivo').value;
             const sexo = document.getElementById('sexo').value;
@@ -436,6 +501,7 @@
         }
 
         // 3. FUNÇÃO DE GERAR PDF (Restaurada com sucesso!)
+
         function baixarPDF() {
             const elemento = document.getElementById('conteudo-receita');
             const btn = event.currentTarget; 
@@ -446,7 +512,7 @@
 
             const opt = {
                 margin: [10, 10, 10, 10],
-                filename: 'NutriScan-Plano.pdf',
+                filename: 'NutrIdeias IA-Plano.pdf',
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { 
                     scale: 2, 
@@ -468,111 +534,8 @@
             });
         }
 
-        // ==========================================
-        // 3. FUNÇÕES DO MODAL DE LOGIN (SUPABASE)
-        // ==========================================
-
-        // Abrir e Fechar o Modal
-        function abrirModalLogin() {
-            document.getElementById('modal-login').classList.remove('hidden');
-        }
-
-        function fecharModalLogin() {
-            document.getElementById('modal-login').classList.add('hidden');
-        }
-
-        // 🔐 Função de Cadastro (Cria a conta)
-        async function fazerCadastro() {
-            const email = document.getElementById('login-email').value;
-            const senha = document.getElementById('login-senha').value;
-
-            if (!email || !senha) {
-                alert("Por favor, preencha seu e-mail e crie uma senha!");
-                return;
-            }
-
-            // Envia para o Supabase
-            const { data, error } = await supabase.auth.signUp({
-                email: email,
-                password: senha,
-            });
-
-            if (error) {
-                alert("Erro ao criar conta: " + error.message);
-            } else {
-                alert("Conta criada com sucesso! O Supabase enviou um e-mail de confirmação para você. Clique no link do e-mail para validar a conta.");
-                fecharModalLogin();
-            }
-        }
-
-        // 🔑 Função de Login (Acessa a conta)
-        async function fazerLogin() {
-            const email = document.getElementById('login-email').value;
-            const senha = document.getElementById('login-senha').value;
-
-            if (!email || !senha) {
-                alert("Por favor, digite seu e-mail e senha!");
-                return;
-            }
-
-            // Autentica no Supabase
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email: email,
-                password: senha,
-            });
-
-            if (error) {
-                alert("Erro no login: E-mail ou senha incorretos.");
-            } else {
-                alert("Bem-vindo ao NutriScan PRO!");
-                fecharModalLogin();
-                // NOTA: O cadeado vai sumir sozinho porque criamos aquele "verificarSessao()" 
-                // que fica escutando o login e aciona o desbloquearModoPro() automaticamente!
-            }
-        }
-
-        // 🚪 Função de Logout (Sair da conta)
-        async function fazerLogout() {
-            const { error } = await supabase.auth.signOut();
-            if (error) {
-                console.error("Erro ao sair:", error);
-            } else {
-                alert("Você saiu da sua conta.");
-                // O cadeado volta a aparecer automaticamente
-                window.location.reload(); 
-            }
-        }
-
+        // Executa a verificação de segurança assim que a página é aberta
+        verificarSessao();
     </script>
-        <div id="modal-login" class="fixed inset-0 z-[100] hidden bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4">
-            <div class="bg-white w-full max-w-sm rounded-3xl p-8 shadow-2xl relative">
-                <button onclick="document.getElementById('modal-login').classList.add('hidden')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
-                    <i class="fas fa-times text-xl"></i>
-                </button>
-
-                <div class="text-center mb-8">
-                    <div class="bg-teal-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-user-astronaut text-teal-600 text-2xl"></i>
-                    </div>
-                    <h3 class="text-xl font-bold text-slate-800">Acesse sua Conta PRO</h3>
-                    <p class="text-sm text-gray-500">Libere seu plano semanal completo.</p>
-                </div>
-
-                <div class="space-y-4">
-                    <input type="email" id="login-email" placeholder="Seu e-mail" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none">
-                    <input type="password" id="login-senha" placeholder="Sua senha" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none">
-                    
-                    <button onclick="fazerLogin()" class="w-full bg-teal-600 text-white py-3 rounded-xl font-bold hover:bg-teal-700 transition">
-                        ENTRAR AGORA
-                    </button>
-                    
-                    <div class="text-center">
-                        <button onclick="fazerCadastro()" class="text-xs text-teal-600 font-semibold hover:underline">
-                            Não tem conta? Cadastre-se em 10 segundos
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
 </body>
 </html>
