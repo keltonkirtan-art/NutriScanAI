@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NutrIdeias IAAI | Seu Nutricionista Inteligente</title>
+    <title>NutrIdeias IA | Seu Nutricionista Inteligente</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         #conteudo-receita h2 { @apply text-2xl font-bold text-teal-800 mb-4; }
         #conteudo-receita ul { @apply list-none p-0; }
@@ -69,9 +70,9 @@
             <h1 class="text-xl font-bold tracking-tight">
                 <span class="text-teal-400">NutrIdeias</span> IA
             </h1>
-            <button class="bg-red-600 text-white px-4 py-1 rounded-full text-sm font-bold hover:bg-red-700 transition shadow-[0_0_10px_rgba(220,38,38,0.5)]">
+           <button id="btn-login-header" onclick="abrirModalLogin()" class="bg-red-600 text-white px-4 py-1 rounded-full text-sm font-bold hover:bg-red-700 transition shadow-[0_0_10px_rgba(220,38,38,0.5)]">
                 SEJA PRO
-            </button>
+            </button>           
         </div>
     </header>
 
@@ -86,48 +87,56 @@
 	    
 
 	<div class="relative mb-6">
+    
+        <div id="paywall-overlay" class="absolute inset-0 z-10 bg-white/60 backdrop-blur-[3px] rounded-xl flex flex-col items-center justify-center border-2 border-dashed border-teal-400 shadow-inner">
+            <div class="bg-white p-4 rounded-full shadow-lg mb-3">
+                <i class="fas fa-lock text-3xl text-teal-600"></i>
+            </div>
+            <h4 class="font-extrabold text-slate-800 text-lg">Função Exclusiva PRO</h4>
+            <p class="text-xs text-gray-600 mb-4 px-8 text-center">Desbloqueie o cálculo de IMC, TMB e a prescrição exata de macronutrientes.</p>
+            <button onclick="abrirModalLogin()" class="bg-red-600 text-white px-6 py-2 rounded-full text-sm font-bold hover:bg-red-700 transition shadow-[0_0_15px_rgba(220,38,38,0.4)] animate-pulse">
+                DESBLOQUEAR AGORA
+            </button>
+        </div>
+
+        <div id="painel-clinico" class="opacity-30 pointer-events-none select-none bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+            <h3 class="text-sm font-bold text-teal-800 mb-3 border-b border-gray-100 pb-2">
+                <i class="fas fa-notes-medical mr-1"></i> Perfil Biológico (PRO)
+            </h3>
             
-            <div class="absolute inset-0 z-10 bg-white/60 backdrop-blur-[3px] rounded-xl flex flex-col items-center justify-center border-2 border-dashed border-teal-400 shadow-inner">
-                <div class="bg-white p-4 rounded-full shadow-lg mb-3">
-                    <i class="fas fa-lock text-3xl text-teal-600"></i>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+                <div>
+                    <label class="block text-xs font-bold mb-1 text-slate-700">Sexo:</label>
+                    <select id="sexo" class="w-full p-2 border border-gray-200 rounded-lg text-sm bg-gray-50">
+                        <option value="masculino">Masculino</option>
+                        <option value="feminino">Feminino</option>
+                    </select>
                 </div>
-                <h4 class="font-extrabold text-slate-800 text-lg">Função Exclusiva PRO</h4>
-                <p class="text-xs text-gray-600 mb-4 px-8 text-center">Desbloqueie o cálculo de IMC, TMB e a prescrição exata de macronutrientes.</p>
-                <button onclick="alert('Aqui abriremos a tela de Pagamento da Vercel/Stripe!')" class="bg-red-600 text-white px-6 py-2 rounded-full text-sm font-bold hover:bg-red-700 				transition shadow-[0_0_15px_rgba(220,38,38,0.4)] animate-pulse">
-                    DESBLOQUEAR AGORA
-                </button>
+                <div>
+                    <label class="block text-xs font-bold mb-1 text-slate-700">Idade:</label>
+                    <input type="number" id="idade" class="w-full p-2 border border-gray-200 rounded-lg text-sm bg-gray-50" placeholder="Ex: 35">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold mb-1 text-slate-700">Peso (kg):</label>
+                    <input type="number" id="peso" step="0.1" class="w-full p-2 border border-gray-200 rounded-lg text-sm bg-gray-50" placeholder="Ex: 88.5">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold mb-1 text-slate-700">Altura (cm):</label>
+                    <input type="number" id="altura" class="w-full p-2 border border-gray-200 rounded-lg text-sm bg-gray-50" placeholder="Ex: 175">
+                </div>
             </div>
 
-            <div class="opacity-50 pointer-events-none select-none bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-                <h3 class="text-sm font-bold text-teal-800 mb-3 border-b border-gray-100 pb-2">
-                    <i class="fas fa-notes-medical mr-1"></i> Perfil Biológico (PRO)
-                </h3>
-                
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
-                    <div>
-                        <label class="block text-xs font-bold mb-1 text-slate-700">Sexo:</label>
-                        <select class="w-full p-2 border border-gray-200 rounded-lg text-sm bg-gray-50"><option>Masculino</option></select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold mb-1 text-slate-700">Idade:</label>
-                        <input type="text" class="w-full p-2 border border-gray-200 rounded-lg text-sm bg-gray-50" placeholder="Ex: 35">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold mb-1 text-slate-700">Peso (kg):</label>
-                        <input type="text" class="w-full p-2 border border-gray-200 rounded-lg text-sm bg-gray-50" placeholder="Ex: 88.5">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold mb-1 text-slate-700">Altura (cm):</label>
-                        <input type="text" class="w-full p-2 border border-gray-200 rounded-lg text-sm bg-gray-50" placeholder="Ex: 175">
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-bold mb-1 text-slate-700">Objetivo:</label>
-                    <select class="w-full p-2 border border-gray-200 rounded-lg text-sm bg-gray-50"><option>Performance Esportiva</option></select>
-                </div>
+            <div>
+                <label class="block text-xs font-bold mb-1 text-slate-700">Objetivo:</label>
+                <select id="objetivo" class="w-full p-2 border border-gray-200 rounded-lg text-sm bg-gray-50">
+                    <option value="emagrecimento">Emagrecimento (Déficit Calórico)</option>
+                    <option value="hipertrofia">Hipertrofia (Superávit Calórico)</option>
+                    <option value="manutencao">Manutenção (Normocalórica)</option>
+                    <option value="performance">Performance Esportiva</option>
+                </select>
             </div>
         </div>
+    </div>
 
 		
 
@@ -138,7 +147,7 @@
                             <input type="radio" name="tempo" value="rapido" class="peer hidden" checked>
                             <div class="text-center p-2 rounded-xl border-2 border-gray-100 peer-checked:border-teal-500 peer-checked:bg-teal-50 hover:bg-gray-50 transition">
                                 <span class="block font-bold text-sm text-teal-800">⚡ Vapt-Vupt</span>
-                                <span class="text-[10px] text-gray-500">Até 15 min</span>
+                                <span class="text-[10px] text-gray-500">Até 15-30 min</span>
                             </div>
                         </label>
                         <label class="cursor-pointer">
@@ -221,6 +230,68 @@
     </main>
 
    <script> 
+        // ==========================================
+        // 1. CONFIGURAÇÃO DO SUPABASE (BANCO E LOGIN)
+        // ==========================================
+        // Use o link que você vai encontrar no topo da página API do Supabase e a chave "anon public" para autenticação. Ambos são encontrados no painel do Supabase, na seção "Configurações" > "API".
+        const supabaseUrl = 'https://tbmipzwxocrmgmivtkds.supabase.co';
+        // Use o código longo (JWT)
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRibWlwend4b2NybWdtaXZ0a2RzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3MDU2MzAsImV4cCI6MjA4OTI4MTYzMH0.wkU2kEyNoJca6RTR58Zp47V3fr_sLr_LkeXuZswQzN4';
+        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        // Variável global para sabermos se o usuário é PRO
+        let usuarioLogado = null;
+
+        // Função que verifica o status do usuário assim que a página carrega
+        async function verificarSessao() {
+            const { data: { session } } = await supabase.auth.getSession();
+            
+            if (session) {
+                // Usuário está logado!
+                usuarioLogado = session.user;
+                desbloquearModoPro();
+            } else {
+                // Visitante anônimo
+                usuarioLogado = null;
+                bloquearModoPro();
+            }
+        }
+
+        // Fica "escutando" se o usuário fez login ou logout
+        supabase.auth.onAuthStateChange((_event, session) => {
+            if (session) {
+                usuarioLogado = session.user;
+                desbloquearModoPro();
+            } else {
+                usuarioLogado = null;
+                bloquearModoPro();
+            }
+        });
+
+        // ==========================================
+        // 2. FUNÇÕES DE TRAVA E DESTRAVA (PAYWALL)
+        // ==========================================
+        function bloquearModoPro() {
+            // Mostra o cadeado e embaraça o formulário clínico
+            document.getElementById('paywall-overlay').classList.remove('hidden');
+            document.getElementById('painel-clinico').classList.add('opacity-30', 'pointer-events-none', 'select-none');
+            
+            // Muda o botão de login lá em cima
+            document.getElementById('btn-login-header').innerHTML = 'ENTRAR / SEJA PRO';
+        }
+
+        function desbloquearModoPro() {
+            // Esconde o cadeado e libera o formulário clínico
+            document.getElementById('paywall-overlay').classList.add('hidden');
+            document.getElementById('painel-clinico').classList.remove('opacity-30', 'pointer-events-none', 'select-none');
+            
+            // Muda o botão de login para mostrar que está logado
+            document.getElementById('btn-login-header').innerHTML = '<i class="fas fa-user-check mr-1"></i> MINHA CONTA';
+        }
+
+        // Executa a verificação assim que o site abre
+        verificarSessao();
+
         // LÓGICA DO CHECKLIST INTERATIVO
         document.getElementById('resultado-area').addEventListener('change', function(e) {
             if (e.target && e.target.type === 'checkbox') {
@@ -395,5 +466,35 @@
             });
         }
     </script>
+        <div id="modal-login" class="fixed inset-0 z-[100] hidden bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4">
+            <div class="bg-white w-full max-w-sm rounded-3xl p-8 shadow-2xl relative">
+                <button onclick="document.getElementById('modal-login').classList.add('hidden')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+
+                <div class="text-center mb-8">
+                    <div class="bg-teal-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-user-astronaut text-teal-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-800">Acesse sua Conta PRO</h3>
+                    <p class="text-sm text-gray-500">Libere seu plano semanal completo.</p>
+                </div>
+
+                <div class="space-y-4">
+                    <input type="email" id="login-email" placeholder="Seu e-mail" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none">
+                    <input type="password" id="login-senha" placeholder="Sua senha" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none">
+                    
+                    <button onclick="fazerLogin()" class="w-full bg-teal-600 text-white py-3 rounded-xl font-bold hover:bg-teal-700 transition">
+                        ENTRAR AGORA
+                    </button>
+                    
+                    <div class="text-center">
+                        <button onclick="fazerCadastro()" class="text-xs text-teal-600 font-semibold hover:underline">
+                            Não tem conta? Cadastre-se em 10 segundos
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
 </body>
 </html>
