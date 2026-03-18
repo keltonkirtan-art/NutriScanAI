@@ -418,7 +418,7 @@
                 .from('perfis')
                 .select('*')
                 .eq('id', usuarioLogado.id)
-                .single(); // Pega apenas 1 registro
+                .maybeSingle(); // ⚠️ TROQUE DE .single() PARA .maybeSingle()
 
             // Se encontrou os dados, preenche a tela
             if (data) {
