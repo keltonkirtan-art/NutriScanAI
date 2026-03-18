@@ -256,11 +256,11 @@
 
         const clienteSupabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-	// Variável global para sabermos se o usuário é PRO
+	    // Variável global para sabermos se o usuário é PRO
 
         let usuarioLogado = null;
 
-	// Função que verifica o status do usuário assim que a página carrega
+	    // Função que verifica o status do usuário assim que a página carrega
 
         async function verificarSessao() {
             const { data: { session } } = await clienteSupabase.auth.getSession();
@@ -272,8 +272,25 @@
                 bloquearModoPro();
             }
         }
+        // Função para desbloquear o modo PRO, liberando a tela e as funções exclusivas
+        function desbloquearModoPro() {
+            document.getElementById('paywall-overlay').classList.add('hidden');
+            document.getElementById('painel-clinico').classList.remove('opacity-30', 'pointer-events-none', 'select-none');
+            
+            const btnHeader = document.getElementById('btn-login-header');
+            btnHeader.innerHTML = '<i class="fas fa-sign-out-alt mr-1"></i> SAIR';
+            btnHeader.setAttribute('onclick', 'fazerLogout()');
 
-	// Fica "escutando" se o usuário fez login ou logout
+            const btnSemanal = document.getElementById('btn-semanal');
+            btnSemanal.setAttribute('onclick', 'gerarPlanoSemanal()');
+            btnSemanal.classList.remove('bg-gray-200', 'text-gray-500');
+            btnSemanal.classList.add('bg-red-600', 'text-white', 'hover:bg-red-700');
+
+            // 👇 PUXA OS DADOS SALVOS ASSIM QUE DESBLOQUEAR A TELA
+            carregarPerfil(); 
+        }
+
+	    // Fica "escutando" se o usuário fez login ou logout
 
         clienteSupabase.auth.onAuthStateChange((_event, session) => {
             if (session) {
@@ -390,6 +407,56 @@
         }
 
         // ==========================================
+        // 3.5 FUNÇÕES DE MEMÓRIA (BANCO DE DADOS)
+        // ==========================================
+
+        async function carregarPerfil() {
+            if (!usuarioLogado) return;
+
+            // Busca os dados do usuário no Supabase
+            const { data, error } = await clienteSupabase
+                .from('perfis')
+                .select('*')
+                .eq('id', usuarioLogado.id)
+                .single(); // Pega apenas 1 registro
+
+            // Se encontrou os dados, preenche a tela
+            if (data) {
+                if(data.sexo) document.getElementById('sexo').value = data.sexo;
+                if(data.idade) document.getElementById('idade').value = data.idade;
+                if(data.peso) document.getElementById('peso').value = data.peso;
+                if(data.altura) document.getElementById('altura').value = data.altura;
+                if(data.objetivo) document.getElementById('objetivo').value = data.objetivo;
+            }
+        }
+
+        async function salvarPerfil() {
+            if (!usuarioLogado) return; // Verifica se o usuário está logado
+
+
+            // Captura o que está na tela agora
+            const sexo = document.getElementById('sexo').value;
+            const idade = document.getElementById('idade').value;
+            const peso = document.getElementById('peso').value;
+            const altura = document.getElementById('altura').value;
+            const objetivo = document.getElementById('objetivo').value;
+
+            // Envia para o Supabase (Upsert: Atualiza se existir, Cria se não existir)
+            const { error } = await clienteSupabase
+                .from('perfis')
+                .upsert({
+                    id: usuarioLogado.id,
+                    sexo: sexo,
+                    idade: idade ? parseInt(idade) : null,
+                    peso: peso ? parseFloat(peso) : null,
+                    altura: altura ? parseFloat(altura) : null,
+                    objetivo: objetivo
+                });
+
+            if (error) console.error("Erro ao salvar perfil em background:", error);
+        } 
+
+        // ==========================================
         // 4. FUNÇÕES DA INTELIGÊNCIA ARTIFICIAL E UI
         // ==========================================
 
@@ -409,7 +476,7 @@
             }
         });
 
-	// 1. FUNÇÃO RECEITA ÚNICA (FREEMIUM)
+	    // 1. FUNÇÃO RECEITA ÚNICA (FREEMIUM)
 
         async function gerarReceita() {
             const area = document.getElementById('resultado-area');
@@ -469,6 +536,8 @@
         // 2. FUNÇÃO PLANO SEMANAL (PRO)
 
         async function gerarPlanoSemanal() {
+            // 👇 SALVA QUALQUER ALTERAÇÃO DE PESO/IDADE ANTES DE GERAR A DIETA
+            await salvarPerfil();
             const area = document.getElementById('resultado-area');
             const loading = document.getElementById('loading');
             const conteudo = document.getElementById('conteudo-receita');
@@ -535,10 +604,7 @@
                 btn.innerHTML = '<span class="font-bold text-sm"><i class="fas fa-calendar-alt mr-1"></i> PLANO 7 DIAS</span><span class="text-[10px] font-normal opacity-80 mt-1">Cardápio + Lista de Compras</span>';
                 btn.disabled = false;
             }
-        }
-
-        // 3. FUNÇÃO DE GERAR PDF (Restaurada com sucesso!)
-
+        }      
        // 3. FUNÇÃO DE GERAR PDF (Blindada contra erro de sintaxe e tela em branco)
         function baixarPDF() {
             const elemento = document.getElementById('conteudo-receita');
