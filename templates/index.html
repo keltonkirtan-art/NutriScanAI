@@ -479,6 +479,8 @@
 	    // 1. FUNÇÃO RECEITA ÚNICA (FREEMIUM)
 
         async function gerarReceita() {
+            // 👇 ADICIONE ESTA LINHA AQUI!
+            await salvarPerfil();
             const area = document.getElementById('resultado-area');
             const loading = document.getElementById('loading');
             const conteudo = document.getElementById('conteudo-receita');
