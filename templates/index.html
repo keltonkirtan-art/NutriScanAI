@@ -100,9 +100,14 @@
             </div>
 
             <div id="painel-clinico" class="opacity-30 pointer-events-none select-none bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-                <h3 class="text-sm font-bold text-teal-800 mb-3 border-b border-gray-100 pb-2">
-                    <i class="fas fa-notes-medical mr-1"></i> Perfil Biológico (PRO)
-                </h3>
+                <div class="flex justify-between items-center mb-3 border-b border-gray-100 pb-2">
+                    <h3 class="text-sm font-bold text-teal-800">
+                        <i class="fas fa-notes-medical mr-1"></i> Meu Perfil (PRO)
+                    </h3>
+                    <button onclick="salvarPerfilManual(event)" class="bg-teal-600 text-white px-3 py-1 rounded-md text-xs font-bold hover:bg-teal-700 transition shadow-sm">
+                        <i class="fas fa-save mr-1"></i> SALVAR
+                    </button>
+                </div>
                 
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
                     <div>
@@ -141,20 +146,25 @@
         <div class="mb-4">
             <label class="block text-sm font-semibold mb-2 text-teal-900">Tempo Disponível:</label>
             <div class="grid grid-cols-2 gap-2">
+                
                 <label class="cursor-pointer">
-                    <input type="radio" name="tempo" value="rapido" class="peer hidden" checked>
+                    <input type="radio" name="tempo" id="radio-rapido" value="rapido" class="peer hidden" checked>
                     <div class="text-center p-2 rounded-xl border-2 border-gray-100 peer-checked:border-teal-500 peer-checked:bg-teal-50 hover:bg-gray-50 transition">
                         <span class="block font-bold text-sm text-teal-800">⚡ Vapt-Vupt</span>
                         <span class="text-[10px] text-gray-500">Até 15 min</span>
                     </div>
                 </label>
-                <label class="cursor-pointer">
-                    <input type="radio" name="tempo" value="elaborado" class="peer hidden">
-                    <div class="text-center p-2 rounded-xl border-2 border-gray-100 peer-checked:border-teal-500 peer-checked:bg-teal-50 hover:bg-gray-50 transition">
+                
+                <label class="cursor-pointer relative">
+                    <input type="radio" name="tempo" id="radio-elaborado" value="elaborado" class="peer hidden" onclick="verificarChefPro(event)">
+                    <div class="text-center p-2 rounded-xl border-2 border-gray-100 peer-checked:border-teal-500 peer-checked:bg-teal-50 hover:bg-gray-50 transition overflow-hidden">
+                        <div class="absolute top-0 right-0 bg-red-600 text-white text-[8px] font-extrabold px-1.5 py-0.5 rounded-bl-lg tracking-wider">PRO</div>
+                        
                         <span class="block font-bold text-sm text-teal-800">👨‍🍳 Chef Pro</span>
                         <span class="text-[10px] text-gray-500">Sem pressa</span>
                     </div>
                 </label>
+
             </div>
         </div>
 
@@ -339,6 +349,25 @@
             btnSemanal.classList.remove('bg-gray-200', 'text-gray-500');
             btnSemanal.classList.add('bg-red-600', 'text-white', 'hover:bg-red-700');
         }
+        // Função que bloqueia o clique no botão Chef Pro se o usuário não for assinante
+        function verificarChefPro(event) {
+            // Se não tem conta logada, bloqueia e pede pra logar
+            if (!usuarioLogado) {
+                event.preventDefault(); // Cancela a seleção da bolinha
+                document.getElementById('radio-rapido').checked = true; // Força voltar para Vapt-Vupt
+                abrirModalLogin();
+                return;
+            }
+
+            // Se está logado mas NÃO tem a assinatura PRO, mostra a janela do Mercado Pago
+            if (usuarioIsPro === false) {
+                event.preventDefault(); // Cancela a seleção da bolinha
+                document.getElementById('radio-rapido').checked = true; // Força voltar para Vapt-Vupt
+                document.getElementById('modal-paywall').classList.remove('hidden'); // Sobe o paywall
+            }
+            
+            // Se passou por tudo (é PRO de verdade), a bolinha marca normalmente e ele pode gerar a receita!
+        }
 
         // ==========================================
         // 3. FUNÇÕES DO MODAL DE LOGIN
@@ -438,9 +467,14 @@
             }
         }
 
-        async function salvarPerfil() {
-            if (!usuarioLogado) return; // Verifica se o usuário está logado
+        async function salvarPerfilManual(event) {
+            if (!usuarioLogado) return;
 
+            // Muda o botão para "girando" para o usuário ver que está salvando
+            const btn = event.currentTarget;
+            const textoOriginal = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            btn.disabled = true;
 
             // Captura o que está na tela agora
             const sexo = document.getElementById('sexo').value;
@@ -449,7 +483,7 @@
             const altura = document.getElementById('altura').value;
             const objetivo = document.getElementById('objetivo').value;
 
-            // Envia para o Supabase (Upsert: Atualiza se existir, Cria se não existir)
+            // Envia para o Supabase explicitamente
             const { error } = await clienteSupabase
                 .from('perfis')
                 .upsert({
@@ -461,8 +495,17 @@
                     objetivo: objetivo
                 });
 
-            if (error) console.error("Erro ao salvar perfil em background:", error);
-        } 
+            // Volta o botão ao normal
+            btn.innerHTML = textoOriginal;
+            btn.disabled = false;
+
+            // Avisa o usuário do resultado
+            if (error) {
+                alert("Erro ao salvar: " + error.message);
+            } else {
+                alert("✅ Dados salvos com sucesso! Suas próximas dietas já usarão este perfil atualizado.");
+            }
+        }
 
         // ==========================================
         // 4. FUNÇÕES DA INTELIGÊNCIA ARTIFICIAL E UI
@@ -488,7 +531,7 @@
 
         async function gerarReceita() {
             // 👇 ADICIONE ESTA LINHA AQUI!
-            await salvarPerfil();
+            // await salvarPerfil();
             const area = document.getElementById('resultado-area');
             const loading = document.getElementById('loading');
             const conteudo = document.getElementById('conteudo-receita');
@@ -547,7 +590,7 @@
 
         async function gerarPlanoSemanal() {
             // 👇 SALVA QUALQUER ALTERAÇÃO DE PESO/IDADE ANTES DE GERAR A DIETA
-            await salvarPerfil();
+            // await salvarPerfil();
             const area = document.getElementById('resultado-area');
             const loading = document.getElementById('loading');
             const conteudo = document.getElementById('conteudo-receita');
