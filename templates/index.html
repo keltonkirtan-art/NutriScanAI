@@ -365,7 +365,7 @@
             btnSemanal.classList.remove('bg-gray-200', 'text-gray-500');
             btnSemanal.classList.add('bg-red-600', 'text-white', 'hover:bg-red-700');
         }
-        // Função que bloqueia o clique no botão Chef Pro se o usuário não for assinante
+            // Função que bloqueia o clique no botão Chef Pro se o usuário não for assinante
         function verificarChefPro(event) {
             // Se não tem conta logada, bloqueia e pede pra logar
             if (!usuarioLogado) {
@@ -375,14 +375,12 @@
                 return;
             }
 
-            // Se está logado mas NÃO tem a assinatura PRO, mostra a janela do Mercado Pago
-            if (usuarioIsPro === false) {
+            // Se está logado mas NÃO É PRO, trava e mostra a cobrança
+            if (window.usuarioIsPro !== true) {
                 event.preventDefault(); // Cancela a seleção da bolinha
                 document.getElementById('radio-rapido').checked = true; // Força voltar para Vapt-Vupt
                 document.getElementById('modal-paywall').classList.remove('hidden'); // Sobe o paywall
             }
-            
-            // Se passou por tudo (é PRO de verdade), a bolinha marca normalmente e ele pode gerar a receita!
         }
 
         // ==========================================
@@ -485,7 +483,7 @@
                     if(data.altura) document.getElementById('altura').value = data.altura;
                     if(data.objetivo) document.getElementById('objetivo').value = data.objetivo;
                     
-                    window.usuarioIsPro = data.is_pro || false; 
+                    window.usuarioIsPro = data.is_pro === true; // Define a variável global para verificar se o usuário é PRO 
                     
                     alert("✅ Seus dados foram carregados com sucesso!");
                 } else {
@@ -623,10 +621,15 @@
         // 2. FUNÇÃO PLANO SEMANAL (PRO)
 
         async function gerarPlanoSemanal() {
-            // 👇 SALVA QUALQUER ALTERAÇÃO DE PESO/IDADE ANTES DE GERAR A DIETA
-            // await salvarPerfil();
+            // 👇 O SEGURANÇA DA PORTA: Verifica se pagou!
+            if (window.usuarioIsPro !== true) {
+                document.getElementById('modal-paywall').classList.remove('hidden');
+                return; // Para a função aqui e não gera a dieta!
+            }
+
             const area = document.getElementById('resultado-area');
             const loading = document.getElementById('loading');
+            // ... resto do seu código continua igualzinho
             const conteudo = document.getElementById('conteudo-receita');
             const btn = document.getElementById('btn-semanal');
 	
