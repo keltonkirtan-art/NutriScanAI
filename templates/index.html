@@ -100,14 +100,9 @@
             </div>
 
             <div id="painel-clinico" class="opacity-30 pointer-events-none select-none bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-                <div class="flex justify-between items-center mb-3 border-b border-gray-100 pb-2">
-                    <h3 class="text-sm font-bold text-teal-800">
-                        <i class="fas fa-notes-medical mr-1"></i> Meu Perfil (PRO)
-                    </h3>
-                    <button onclick="salvarPerfilManual(event)" class="bg-teal-600 text-white px-3 py-1 rounded-md text-xs font-bold hover:bg-teal-700 transition shadow-sm">
-                        <i class="fas fa-save mr-1"></i> SALVAR
-                    </button>
-                </div>
+                <h3 class="text-sm font-bold text-teal-800 mb-3 border-b border-gray-100 pb-2">
+                    <i class="fas fa-notes-medical mr-1"></i> Meu Perfil Biológico (PRO)
+                </h3>
                 
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
                     <div>
@@ -131,7 +126,7 @@
                     </div>
                 </div>
 
-                <div>
+                <div class="mb-4">
                     <label class="block text-xs font-bold mb-1 text-slate-700">Objetivo:</label>
                     <select id="objetivo" class="w-full p-2 border border-gray-200 rounded-lg text-sm bg-gray-50">
                         <option value="emagrecimento">Emagrecimento (Déficit Calórico)</option>
@@ -140,8 +135,16 @@
                         <option value="performance">Performance Esportiva</option>
                     </select>
                 </div>
+
+                <div class="flex gap-2 pt-3 border-t border-gray-100">
+                    <button onclick="carregarPerfilManual(event)" class="flex-1 bg-blue-50 text-blue-700 px-3 py-2 rounded-lg text-xs font-bold hover:bg-blue-100 transition shadow-sm flex items-center justify-center border border-blue-200">
+                        <i class="fas fa-cloud-download-alt mr-2"></i> PUXAR DADOS
+                    </button>
+                    <button onclick="salvarPerfilManual(event)" class="flex-1 bg-teal-600 text-white px-3 py-2 rounded-lg text-xs font-bold hover:bg-teal-700 transition shadow-sm flex items-center justify-center">
+                        <i class="fas fa-save mr-2"></i> SALVAR
+                    </button>
+                </div>
             </div>
-        </div>
 
         <div class="mb-4">
             <label class="block text-sm font-semibold mb-2 text-teal-900">Tempo Disponível:</label>
@@ -297,7 +300,7 @@
             btnSemanal.classList.add('bg-red-600', 'text-white', 'hover:bg-red-700');
 
             // 👇 PUXA OS DADOS SALVOS ASSIM QUE DESBLOQUEAR A TELA
-            carregarPerfil(); 
+           // carregarPerfil(); 
         }
 
 	    // Fica "escutando" se o usuário fez login ou logout
@@ -439,37 +442,49 @@
         // 3.5 FUNÇÕES DE MEMÓRIA (BANCO DE DADOS)
         // ==========================================
 
-        async function carregarPerfil() {
-            if (!usuarioLogado) return;
+        async function carregarPerfilManual(event) {
+            if (!usuarioLogado) {
+                alert("Você precisa estar logado para puxar seus dados.");
+                return;
+            }
+
+            // Efeito visual de carregando no botão
+            const btn = event.currentTarget;
+            const textoOriginal = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> BUSCANDO...';
+            btn.disabled = true;
             
             try {
-                // Busca os dados do usuário no Supabase
+                // Força a ida ao Supabase
                 const { data, error } = await clienteSupabase
                     .from('perfis')
                     .select('*')
                     .eq('id', usuarioLogado.id)
                     .maybeSingle(); 
 
-                // Se houver bloqueio do banco, ele vai te avisar na tela!
                 if (error) {
-                    alert("Erro ao puxar seus dados: " + error.message);
-                    console.error("Erro na leitura:", error);
-                    return;
-                }
-
-                // Se encontrou os dados, preenche a tela imediatamente
-                if (data) {
+                    alert("Erro ao puxar dados: " + error.message);
+                } else if (data) {
+                    // Preenche a tela
                     if(data.sexo) document.getElementById('sexo').value = data.sexo;
                     if(data.idade) document.getElementById('idade').value = data.idade;
                     if(data.peso) document.getElementById('peso').value = data.peso;
                     if(data.altura) document.getElementById('altura').value = data.altura;
                     if(data.objetivo) document.getElementById('objetivo').value = data.objetivo;
                     
-                    // Salva na memória global se ele é assinante PRO
                     window.usuarioIsPro = data.is_pro || false; 
+                    
+                    alert("✅ Seus dados foram carregados com sucesso!");
+                } else {
+                    alert("Você ainda não tem um perfil salvo. Preencha os dados e clique em SALVAR.");
                 }
             } catch (err) {
-                console.error("Erro grave no Javascript ao carregar: ", err);
+                console.error("Erro na leitura: ", err);
+                alert("Erro de conexão ao tentar ler o banco de dados.");
+            } finally {
+                // Volta o botão ao normal
+                btn.innerHTML = textoOriginal;
+                btn.disabled = false;
             }
         }
 
