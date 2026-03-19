@@ -79,7 +79,7 @@
         </div>
     </header>
 
-    <main class="container mx-auto px-4 py-8 max-w-2xl">
+   <main class="container mx-auto px-4 py-8 max-w-2xl">
         
         <section class="mb-8 text-center">
             <h2 class="text-2xl font-extrabold text-teal-900">O que temos para hoje?</h2>
@@ -100,9 +100,11 @@
             </div>
 
             <div id="painel-clinico" class="opacity-30 pointer-events-none select-none bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-                <h3 class="text-sm font-bold text-teal-800 mb-3 border-b border-gray-100 pb-2">
-                    <i class="fas fa-notes-medical mr-1"></i> Meu Perfil Biológico (PRO)
-                </h3>
+                <div class="flex justify-between items-center mb-3 border-b border-gray-100 pb-2">
+                    <h3 class="text-sm font-bold text-teal-800">
+                        <i class="fas fa-notes-medical mr-1"></i> Meu Perfil (PRO)
+                    </h3>
+                </div>
                 
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
                     <div>
@@ -145,11 +147,11 @@
                     </button>
                 </div>
             </div>
+        </div>
 
         <div class="mb-4">
             <label class="block text-sm font-semibold mb-2 text-teal-900">Tempo Disponível:</label>
             <div class="grid grid-cols-2 gap-2">
-                
                 <label class="cursor-pointer">
                     <input type="radio" name="tempo" id="radio-rapido" value="rapido" class="peer hidden" checked>
                     <div class="text-center p-2 rounded-xl border-2 border-gray-100 peer-checked:border-teal-500 peer-checked:bg-teal-50 hover:bg-gray-50 transition">
@@ -157,17 +159,14 @@
                         <span class="text-[10px] text-gray-500">Até 15 min</span>
                     </div>
                 </label>
-                
                 <label class="cursor-pointer relative">
                     <input type="radio" name="tempo" id="radio-elaborado" value="elaborado" class="peer hidden" onclick="verificarChefPro(event)">
                     <div class="text-center p-2 rounded-xl border-2 border-gray-100 peer-checked:border-teal-500 peer-checked:bg-teal-50 hover:bg-gray-50 transition overflow-hidden">
                         <div class="absolute top-0 right-0 bg-red-600 text-white text-[8px] font-extrabold px-1.5 py-0.5 rounded-bl-lg tracking-wider">PRO</div>
-                        
                         <span class="block font-bold text-sm text-teal-800">👨‍🍳 Chef Pro</span>
                         <span class="text-[10px] text-gray-500">Sem pressa</span>
                     </div>
                 </label>
-
             </div>
         </div>
 
@@ -177,15 +176,19 @@
             <textarea id="ingredientes_geladeira" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none" rows="2" placeholder="Ex: Dois ovos, 100g de tilápia, rúcula..."></textarea>
         </div>
 
-        <div class="mb-4">
-            <label class="block text-sm font-semibold mb-1 text-teal-900">Preferências para a Semana (PRO):</label>
-            <p class="text-xs text-gray-500 mb-2">O que mais você gosta de comer além do que já tem?</p>
-            <textarea id="ingredientes_preferencias" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none" rows="2" placeholder="Ex: Frango, batata doce, abacate..."></textarea>
-        </div>
+        <div id="painel-extra-pro" class="opacity-30 pointer-events-none select-none relative mb-4 p-4 border border-teal-100 bg-teal-50/40 rounded-xl">
+            <div class="absolute -top-3 right-4 bg-red-600 text-white text-[9px] font-extrabold px-2 py-0.5 rounded-lg tracking-wider shadow-sm">PRO</div>
+            
+            <div class="mb-4">
+                <label class="block text-sm font-semibold mb-1 text-teal-900">Preferências para a Semana (PRO):</label>
+                <p class="text-xs text-gray-500 mb-2">O que mais você gosta de comer além do que já tem?</p>
+                <textarea id="ingredientes_preferencias" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none" rows="2" placeholder="Ex: Frango, batata doce, abacate..."></textarea>
+            </div>
 
-        <div class="mb-4">
-            <label class="block text-sm font-semibold mb-1 text-teal-900">Restrições Alimentares:</label>
-            <input type="text" id="restricoes" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none" placeholder="Ex: Sem glúten, Vegano, Sem lactose...">
+            <div>
+                <label class="block text-sm font-semibold mb-1 text-teal-900">Restrições Alimentares (PRO):</label>
+                <input type="text" id="restricoes" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none" placeholder="Ex: Sem glúten, Vegano, Sem lactose...">
+            </div>
         </div>
 
         <div class="flex gap-3 mt-6 no-print">
@@ -194,9 +197,9 @@
                 <span class="text-[10px] font-normal opacity-80 mt-1">O que tem na geladeira</span>
             </button>
             
-            <button onclick="abrirModalLogin()" id="btn-semanal" class="relative flex-1 bg-gray-200 text-gray-500 py-3 px-4 rounded-xl border-b-4 border-gray-300 flex flex-col items-center justify-center overflow-hidden hover:bg-gray-300 transition">
+            <button onclick="gerarPlanoSemanal()" id="btn-semanal" class="relative flex-1 bg-gray-200 text-gray-500 py-3 px-4 rounded-xl border-b-4 border-gray-300 flex flex-col items-center justify-center overflow-hidden hover:bg-gray-300 transition">
                 <div class="absolute top-0 right-0 bg-red-600 text-white text-[9px] font-extrabold px-2 py-0.5 rounded-bl-lg tracking-wider">PRO</div>
-                <span class="font-bold text-sm text-white-600"><i class="fas fa-lock mr-1 text-slate-400"></i> PLANO 7 DIAS</span>
+                <span class="font-bold text-sm text-gray-600"><i class="fas fa-lock mr-1 text-slate-400"></i> PLANO 7 DIAS</span>
                 <span class="text-[10px] font-normal mt-1 text-gray-500">Cardápio + Lista de Compras</span>
             </button>
         </div>
@@ -320,16 +323,21 @@
         // ==========================================
 
         function bloquearModoPro() {
+            // Trava o Perfil Biológico e sobe o Cadeado
             document.getElementById('paywall-overlay').classList.remove('hidden');
             document.getElementById('painel-clinico').classList.add('opacity-30', 'pointer-events-none', 'select-none');
             
-	 // Botão pede para fazer Login
-
+            // Trava a zona de Preferências/Restrições
+            if(document.getElementById('painel-extra-pro')) {
+                document.getElementById('painel-extra-pro').classList.add('opacity-30', 'pointer-events-none', 'select-none');
+            }
+            
+            // Ajusta o botão do cabeçalho
             const btnHeader = document.getElementById('btn-login-header');
             btnHeader.innerHTML = 'SEJA PRO';
             btnHeader.setAttribute('onclick', 'abrirModalLogin()');
 
-            // Mantém o botão de Plano Semanal bloqueado chamando o modal
+            // Mantém o botão de Plano Semanal bloqueado chamando o modal de Login
             const btnSemanal = document.getElementById('btn-semanal');
             btnSemanal.setAttribute('onclick', 'abrirModalLogin()');
             btnSemanal.classList.add('bg-gray-200', 'text-gray-500');
@@ -337,16 +345,21 @@
         }
 
         function desbloquearModoPro() {
+            // Destrava o Perfil Biológico e esconde o Cadeado
             document.getElementById('paywall-overlay').classList.add('hidden');
             document.getElementById('painel-clinico').classList.remove('opacity-30', 'pointer-events-none', 'select-none');
             
-	    // Botão vira o "Sair da Conta"
-
+            // Destrava a zona de Preferências/Restrições
+            if(document.getElementById('painel-extra-pro')) {
+                document.getElementById('painel-extra-pro').classList.remove('opacity-30', 'pointer-events-none', 'select-none');
+            }
+            
+            // Ajusta o botão do cabeçalho
             const btnHeader = document.getElementById('btn-login-header');
             btnHeader.innerHTML = '<i class="fas fa-sign-out-alt mr-1"></i> SAIR';
             btnHeader.setAttribute('onclick', 'fazerLogout()');
 
-            // Libera o botão do Plano Semanal para rodar a IA
+            // Libera o botão do Plano Semanal para rodar a IA (passando pela verificação de pagamento)
             const btnSemanal = document.getElementById('btn-semanal');
             btnSemanal.setAttribute('onclick', 'gerarPlanoSemanal()');
             btnSemanal.classList.remove('bg-gray-200', 'text-gray-500');
