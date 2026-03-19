@@ -442,28 +442,34 @@
         async function carregarPerfil() {
             if (!usuarioLogado) return;
             
-            // Busca os dados do usuário no Supabase
-            const { data, error } = await clienteSupabase
-                .from('perfis')
-                .select('*')
-                .eq('id', usuarioLogado.id)
-                .maybeSingle(); // A mágica que impede o travamento na leitura
+            try {
+                // Busca os dados do usuário no Supabase
+                const { data, error } = await clienteSupabase
+                    .from('perfis')
+                    .select('*')
+                    .eq('id', usuarioLogado.id)
+                    .maybeSingle(); 
 
-            if (error) {
-                console.error("Erro ao tentar ler o perfil:", error);
-                return;
-            }
+                // Se houver bloqueio do banco, ele vai te avisar na tela!
+                if (error) {
+                    alert("Erro ao puxar seus dados: " + error.message);
+                    console.error("Erro na leitura:", error);
+                    return;
+                }
 
-            // Se encontrou os dados no banco (como vimos na sua foto), preenche a tela
-            if (data) {
-                if(data.sexo) document.getElementById('sexo').value = data.sexo;
-                if(data.idade) document.getElementById('idade').value = data.idade;
-                if(data.peso) document.getElementById('peso').value = data.peso;
-                if(data.altura) document.getElementById('altura').value = data.altura;
-                if(data.objetivo) document.getElementById('objetivo').value = data.objetivo;
-                
-                // Salva na memória se o usuário pagou ou não o Mercado Pago
-                usuarioIsPro = data.is_pro || false; 
+                // Se encontrou os dados, preenche a tela imediatamente
+                if (data) {
+                    if(data.sexo) document.getElementById('sexo').value = data.sexo;
+                    if(data.idade) document.getElementById('idade').value = data.idade;
+                    if(data.peso) document.getElementById('peso').value = data.peso;
+                    if(data.altura) document.getElementById('altura').value = data.altura;
+                    if(data.objetivo) document.getElementById('objetivo').value = data.objetivo;
+                    
+                    // Salva na memória global se ele é assinante PRO
+                    window.usuarioIsPro = data.is_pro || false; 
+                }
+            } catch (err) {
+                console.error("Erro grave no Javascript ao carregar: ", err);
             }
         }
 
