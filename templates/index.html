@@ -411,6 +411,10 @@
         // 3. FUNÇÕES DO MODAL DE LOGIN
         // ==========================================
 
+        // ==========================================
+        // 3. FUNÇÕES DO MODAL DE LOGIN
+        // ==========================================
+
         function abrirModalLogin() {
             document.getElementById('modal-login').classList.remove('hidden');
         }
@@ -420,7 +424,8 @@
         }
 
         async function fazerCadastro() {
-            const email = document.getElementById('login-email').value;
+            // O .trim() remove espaços vazios invisíveis no começo e no fim!
+            const email = document.getElementById('login-email').value.trim();
             const senha = document.getElementById('login-senha').value;
 
             if (!email || !senha) {
@@ -436,13 +441,13 @@
             if (error) {
                 alert("Erro ao criar conta: " + error.message);
             } else {
-                alert("Conta criada com sucesso! Verifique seu e-mail para validar a conta.");
-                fecharModalLogin();
+                alert("Conta criada com sucesso! Você já pode clicar em ENTRAR AGORA.");
             }
         }
 
         async function fazerLogin(event) {
-            const email = document.getElementById('login-email').value;
+            // O .trim() salva o usuário de erros invisíveis
+            const email = document.getElementById('login-email').value.trim();
             const senha = document.getElementById('login-senha').value;
 
             if (!email || !senha) {
@@ -450,40 +455,46 @@
                 return;
             }
 
-            // Efeito visual no botão para o usuário não clicar duas vezes
+            // Captura o botão e faz ele girar
             const btn = event ? event.currentTarget : document.querySelector('#modal-login button.bg-teal-600');
-            let textoOriginal = "ENTRAR AGORA";
-            if(btn) {
-                textoOriginal = btn.innerHTML;
+            const textoOriginal = btn ? btn.innerHTML : "ENTRAR AGORA";
+            
+            if (btn) {
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> ENTRANDO...';
                 btn.disabled = true;
             }
 
-            const { data, error } = await clienteSupabase.auth.signInWithPassword({
-                email: email,
-                password: senha,
-            });
+            try {
+                // Tenta fazer o login no banco
+                const { data, error } = await clienteSupabase.auth.signInWithPassword({
+                    email: email,
+                    password: senha,
+                });
 
-            if (error) {
-                alert("Erro no login: E-mail ou senha incorretos.");
-                if(btn) {
+                if (error) {
+                    // Se der erro (ex: senha errada), avisa o motivo e destrava o botão!
+                    alert("Acesso negado: " + error.message);
+                    if (btn) {
+                        btn.innerHTML = textoOriginal;
+                        btn.disabled = false;
+                    }
+                } else {
+                    // Se der sucesso, recarrega a página para processar a Interface Limpa!
+                    window.location.reload();
+                }
+            } catch (err) {
+                // Se faltar internet ou der pane no navegador, ele avisa!
+                alert("Erro de conexão: " + err.message);
+                if (btn) {
                     btn.innerHTML = textoOriginal;
                     btn.disabled = false;
                 }
-            } else {
-                // A mágica da limpeza: Recarrega a página inteira para aplicar as travas perfeitamente!
-                window.location.reload();
             }
         }
 
         async function fazerLogout() {
-            const { error } = await clienteSupabase.auth.signOut();
-            if (error) {
-                console.error("Erro ao sair:", error);
-            } else {
-                alert("Você saiu da sua conta.");
-                window.location.reload(); 
-            }
+            await clienteSupabase.auth.signOut();
+            window.location.reload(); 
         }
 
         // ==========================================
