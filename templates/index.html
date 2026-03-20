@@ -350,13 +350,18 @@
         // 2. VERIFICADORES SILENCIOSOS DO BANCO DE DADOS
         // ==========================================
         async function verificarSessao() {
-            const { data: { session } } = await clienteSupabase.auth.getSession();
-            if (session) {
-                usuarioLogado = session.user;
-                // Puxa o status PRO de forma invisível no segundo que entra
-                const { data } = await clienteSupabase.from('perfis').select('is_pro').eq('id', usuarioLogado.id).maybeSingle();
-                window.usuarioIsPro = data ? data.is_pro : false;
-            } else {
+            try {
+                const { data: { session } } = await clienteSupabase.auth.getSession();
+                if (session) {
+                    usuarioLogado = session.user;
+                    const { data } = await clienteSupabase.from('perfis').select('is_pro').eq('id', usuarioLogado.id).maybeSingle();
+                    window.usuarioIsPro = data ? data.is_pro : false;
+                } else {
+                    usuarioLogado = null;
+                    window.usuarioIsPro = false;
+                }
+            } catch (e) {
+                console.error("Erro ao verificar sessão:", e);
                 usuarioLogado = null;
                 window.usuarioIsPro = false;
             }
@@ -364,11 +369,17 @@
         }
 
         clienteSupabase.auth.onAuthStateChange(async (_event, session) => {
-            if (session) {
-                usuarioLogado = session.user;
-                const { data } = await clienteSupabase.from('perfis').select('is_pro').eq('id', usuarioLogado.id).maybeSingle();
-                window.usuarioIsPro = data ? data.is_pro : false;
-            } else {
+            try {
+                if (session) {
+                    usuarioLogado = session.user;
+                    const { data } = await clienteSupabase.from('perfis').select('is_pro').eq('id', usuarioLogado.id).maybeSingle();
+                    window.usuarioIsPro = data ? data.is_pro : false;
+                } else {
+                    usuarioLogado = null;
+                    window.usuarioIsPro = false;
+                }
+            } catch (e) {
+                console.error("Erro ao mudar estado de auth:", e);
                 usuarioLogado = null;
                 window.usuarioIsPro = false;
             }
@@ -406,11 +417,6 @@
                 abrirModalPaywall(); // Salta a janela do Mercado Pago na cara!
             }
         }
-
-        // ==========================================
-        // 3. FUNÇÕES DO MODAL DE LOGIN
-        // ==========================================
-
         // ==========================================
         // 3. FUNÇÕES DO MODAL DE LOGIN
         // ==========================================
@@ -479,8 +485,13 @@
                         btn.disabled = false;
                     }
                 } else {
-                    // Se der sucesso, recarrega a página para processar a Interface Limpa!
-                    window.location.reload();
+                    // CORREÇÃO: Destrava o botão e FECHA o modal de login suavemente
+                    if (btn) {
+                        btn.innerHTML = textoOriginal;
+                        btn.disabled = false;
+                    }
+                    fecharModalLogin();
+                    // Não precisamos dar "reload". O `onAuthStateChange` vai perceber o login e liberar a tela na mesma hora!
                 }
             } catch (err) {
                 // Se faltar internet ou der pane no navegador, ele avisa!
@@ -780,7 +791,7 @@
         }
 
         // Executa a verificação de segurança assim que a página é aberta
-        verificarSessao();
+        // verificarSessao();
     </script>
 </body>
 </html>
