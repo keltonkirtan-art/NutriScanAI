@@ -248,7 +248,7 @@
                     <input type="email" id="login-email" placeholder="Seu e-mail" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none">
                     <input type="password" id="login-senha" placeholder="Sua senha" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none">
                     
-                    <button onclick="fazerLogin()" class="w-full bg-teal-600 text-white py-3 rounded-xl font-bold hover:bg-teal-700 transition">
+                    <button onclick="fazerLogin(event)" class="w-full bg-teal-600 text-white py-3 rounded-xl font-bold hover:bg-teal-700 transition">
                         ENTRAR AGORA
                     </button>
                     
@@ -441,13 +441,22 @@
             }
         }
 
-        async function fazerLogin() {
+        async function fazerLogin(event) {
             const email = document.getElementById('login-email').value;
             const senha = document.getElementById('login-senha').value;
 
             if (!email || !senha) {
                 alert("Por favor, digite seu e-mail e senha!");
                 return;
+            }
+
+            // Efeito visual no botão para o usuário não clicar duas vezes
+            const btn = event ? event.currentTarget : document.querySelector('#modal-login button.bg-teal-600');
+            let textoOriginal = "ENTRAR AGORA";
+            if(btn) {
+                textoOriginal = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> ENTRANDO...';
+                btn.disabled = true;
             }
 
             const { data, error } = await clienteSupabase.auth.signInWithPassword({
@@ -457,9 +466,13 @@
 
             if (error) {
                 alert("Erro no login: E-mail ou senha incorretos.");
+                if(btn) {
+                    btn.innerHTML = textoOriginal;
+                    btn.disabled = false;
+                }
             } else {
-                alert("Bem-vindo ao NutriScan PRO!");
-                fecharModalLogin();
+                // A mágica da limpeza: Recarrega a página inteira para aplicar as travas perfeitamente!
+                window.location.reload();
             }
         }
 
