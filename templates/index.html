@@ -259,6 +259,29 @@
                 </div>
             </div>
         </div>
+            <div id="modal-paywall" class="fixed inset-0 z-[110] hidden bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4">
+                <div class="bg-white w-full max-w-md rounded-3xl p-8 shadow-2xl relative text-center">
+                    <button onclick="fecharModalPaywall()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                    
+                    <div class="bg-amber-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-sm">
+                        <i class="fas fa-crown text-amber-500 text-3xl"></i>
+                    </div>
+                    
+                    <h3 class="text-2xl font-extrabold text-slate-800 mb-2">Desbloqueia o Modo PRO</h3>
+                    <p class="text-sm text-gray-600 mb-6 px-2">Seja PRO para libertar o Perfil Clínico, o Chef Pro e o Planeamento Semanal Inteligente.</p>
+                    
+                    <div class="bg-slate-50 p-4 rounded-xl mb-6 border border-gray-200 shadow-inner">
+                        <p class="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-1">Acesso Anual Liberado</p>
+                        <p class="text-4xl font-extrabold text-teal-600">Por apenas R$ 29,70<span class="text-sm text-gray-400 font-normal">/ano</span></p>
+                    </div>
+
+                    <a href="https://mpago.la/1i1RzXA" target="_blank" class="block w-full bg-[#009EE3] text-white py-4 rounded-xl font-bold hover:bg-blue-600 transition shadow-lg text-lg flex items-center justify-center">
+                        <i class="fas fa-handshake mr-2"></i> SEJA PRO COM MERCADO PAGO
+                    </a>
+                </div>
+            </div>
     </div>
 
     <script> 
@@ -275,111 +298,112 @@
 	    // Variável global para sabermos se o usuário é PRO
 
         let usuarioLogado = null;
+        window.usuarioIsPro = false;
 
-	    // Função que verifica o status do usuário assim que a página carrega
+        // ==========================================
+        // 1. O "CÉREBRO" QUE CONTROLA O ECRÃ
+        // ==========================================
+        async function atualizarInterface() {
+            // Ajusta o botão do cabeçalho
+            const btnHeader = document.getElementById('btn-login-header');
+            if (usuarioLogado) {
+                btnHeader.innerHTML = '<i class="fas fa-sign-out-alt mr-1"></i> SAIR';
+                btnHeader.setAttribute('onclick', 'fazerLogout()');
+            } else {
+                btnHeader.innerHTML = 'SEJA PRO';
+                btnHeader.setAttribute('onclick', 'abrirModalLogin()');
+            }
 
+            // A GRANDE REGRA: É PRO ou é Gratuito?
+            if (window.usuarioIsPro === true) {
+                // É PRO VIP: Destranca tudo!
+                document.getElementById('paywall-overlay').classList.add('hidden');
+                document.getElementById('painel-clinico').classList.remove('opacity-30', 'pointer-events-none', 'select-none');
+                if(document.getElementById('painel-extra-pro')) document.getElementById('painel-extra-pro').classList.remove('opacity-30', 'pointer-events-none', 'select-none');
+                
+                const btnSemanal = document.getElementById('btn-semanal');
+                btnSemanal.setAttribute('onclick', 'gerarPlanoSemanal()');
+                btnSemanal.classList.remove('bg-gray-200', 'text-gray-500');
+                btnSemanal.classList.add('bg-red-600', 'text-white', 'hover:bg-red-700');
+            } else {
+                // É GRATUITO (Logado ou não): Mantém os formulários trancados!
+                document.getElementById('paywall-overlay').classList.remove('hidden');
+                document.getElementById('painel-clinico').classList.add('opacity-30', 'pointer-events-none', 'select-none');
+                if(document.getElementById('painel-extra-pro')) document.getElementById('painel-extra-pro').classList.add('opacity-30', 'pointer-events-none', 'select-none');
+                
+                // Transforma o botão do cadeado do meio do ecrã no link de pagamento
+                const btnCadeado = document.querySelector('#paywall-overlay button');
+                if (btnCadeado) {
+                    btnCadeado.innerHTML = usuarioLogado ? 'ASSINAR PRO AGORA' : 'DESBLOQUEAR AGORA';
+                    btnCadeado.setAttribute('onclick', usuarioLogado ? 'abrirModalPaywall()' : 'abrirModalLogin()');
+                }
+
+                // Tranca o botão do Plano de 7 dias (Redireciona para o pagamento se logado)
+                const btnSemanal = document.getElementById('btn-semanal');
+                btnSemanal.setAttribute('onclick', usuarioLogado ? 'abrirModalPaywall()' : 'abrirModalLogin()');
+                btnSemanal.classList.add('bg-gray-200', 'text-gray-500');
+                btnSemanal.classList.remove('bg-red-600', 'text-white', 'hover:bg-red-700');
+            }
+        }
+
+        // ==========================================
+        // 2. VERIFICADORES SILENCIOSOS DO BANCO DE DADOS
+        // ==========================================
         async function verificarSessao() {
             const { data: { session } } = await clienteSupabase.auth.getSession();
             if (session) {
                 usuarioLogado = session.user;
-                desbloquearModoPro();
+                // Puxa o status PRO de forma invisível no segundo que entra
+                const { data } = await clienteSupabase.from('perfis').select('is_pro').eq('id', usuarioLogado.id).maybeSingle();
+                window.usuarioIsPro = data ? data.is_pro : false;
             } else {
                 usuarioLogado = null;
-                bloquearModoPro();
+                window.usuarioIsPro = false;
             }
-        }
-        // Função para desbloquear o modo PRO, liberando a tela e as funções exclusivas
-        function desbloquearModoPro() {
-            document.getElementById('paywall-overlay').classList.add('hidden');
-            document.getElementById('painel-clinico').classList.remove('opacity-30', 'pointer-events-none', 'select-none');
-            
-            const btnHeader = document.getElementById('btn-login-header');
-            btnHeader.innerHTML = '<i class="fas fa-sign-out-alt mr-1"></i> SAIR';
-            btnHeader.setAttribute('onclick', 'fazerLogout()');
-
-            const btnSemanal = document.getElementById('btn-semanal');
-            btnSemanal.setAttribute('onclick', 'gerarPlanoSemanal()');
-            btnSemanal.classList.remove('bg-gray-200', 'text-gray-500');
-            btnSemanal.classList.add('bg-red-600', 'text-white', 'hover:bg-red-700');
-
-            // 👇 PUXA OS DADOS SALVOS ASSIM QUE DESBLOQUEAR A TELA
-           // carregarPerfil(); 
+            atualizarInterface();
         }
 
-	    // Fica "escutando" se o usuário fez login ou logout
-
-        clienteSupabase.auth.onAuthStateChange((_event, session) => {
+        clienteSupabase.auth.onAuthStateChange(async (_event, session) => {
             if (session) {
                 usuarioLogado = session.user;
-                desbloquearModoPro();
+                const { data } = await clienteSupabase.from('perfis').select('is_pro').eq('id', usuarioLogado.id).maybeSingle();
+                window.usuarioIsPro = data ? data.is_pro : false;
             } else {
                 usuarioLogado = null;
-                bloquearModoPro();
+                window.usuarioIsPro = false;
             }
+            atualizarInterface();
         });
 
         // ==========================================
-        // 2. FUNÇÕES DE TRAVA E DESTRAVA (PAYWALL)
+        // 3. CONTROLADORES DE PAGAMENTO E BLOQUEIOS
         // ==========================================
-
-        function bloquearModoPro() {
-            // Trava o Perfil Biológico e sobe o Cadeado
-            document.getElementById('paywall-overlay').classList.remove('hidden');
-            document.getElementById('painel-clinico').classList.add('opacity-30', 'pointer-events-none', 'select-none');
-            
-            // Trava a zona de Preferências/Restrições
-            if(document.getElementById('painel-extra-pro')) {
-                document.getElementById('painel-extra-pro').classList.add('opacity-30', 'pointer-events-none', 'select-none');
+        function abrirModalPaywall() {
+            const modal = document.getElementById('modal-paywall');
+            if(modal) {
+                modal.classList.remove('hidden');
+            } else {
+                alert("Para aceder a esta funcionalidade, precisas de assinar o plano PRO!");
+                window.open("https://mpago.la/1i1RzXA", "_blank");
             }
-            
-            // Ajusta o botão do cabeçalho
-            const btnHeader = document.getElementById('btn-login-header');
-            btnHeader.innerHTML = 'SEJA PRO';
-            btnHeader.setAttribute('onclick', 'abrirModalLogin()');
-
-            // Mantém o botão de Plano Semanal bloqueado chamando o modal de Login
-            const btnSemanal = document.getElementById('btn-semanal');
-            btnSemanal.setAttribute('onclick', 'abrirModalLogin()');
-            btnSemanal.classList.add('bg-gray-200', 'text-gray-500');
-            btnSemanal.classList.remove('bg-red-600', 'text-white', 'hover:bg-red-700');
         }
 
-        function desbloquearModoPro() {
-            // Destrava o Perfil Biológico e esconde o Cadeado
-            document.getElementById('paywall-overlay').classList.add('hidden');
-            document.getElementById('painel-clinico').classList.remove('opacity-30', 'pointer-events-none', 'select-none');
-            
-            // Destrava a zona de Preferências/Restrições
-            if(document.getElementById('painel-extra-pro')) {
-                document.getElementById('painel-extra-pro').classList.remove('opacity-30', 'pointer-events-none', 'select-none');
-            }
-            
-            // Ajusta o botão do cabeçalho
-            const btnHeader = document.getElementById('btn-login-header');
-            btnHeader.innerHTML = '<i class="fas fa-sign-out-alt mr-1"></i> SAIR';
-            btnHeader.setAttribute('onclick', 'fazerLogout()');
-
-            // Libera o botão do Plano Semanal para rodar a IA (passando pela verificação de pagamento)
-            const btnSemanal = document.getElementById('btn-semanal');
-            btnSemanal.setAttribute('onclick', 'gerarPlanoSemanal()');
-            btnSemanal.classList.remove('bg-gray-200', 'text-gray-500');
-            btnSemanal.classList.add('bg-red-600', 'text-white', 'hover:bg-red-700');
+        function fecharModalPaywall() {
+            const modal = document.getElementById('modal-paywall');
+            if(modal) modal.classList.add('hidden');
         }
-            // Função que bloqueia o clique no botão Chef Pro se o usuário não for assinante
+
         function verificarChefPro(event) {
-            // Se não tem conta logada, bloqueia e pede pra logar
             if (!usuarioLogado) {
-                event.preventDefault(); // Cancela a seleção da bolinha
-                document.getElementById('radio-rapido').checked = true; // Força voltar para Vapt-Vupt
+                event.preventDefault(); 
+                document.getElementById('radio-rapido').checked = true; 
                 abrirModalLogin();
                 return;
             }
-
-            // Se está logado mas NÃO É PRO, trava e mostra a cobrança
             if (window.usuarioIsPro !== true) {
-                event.preventDefault(); // Cancela a seleção da bolinha
+                event.preventDefault(); // Impede a bolinha de ficar verde
                 document.getElementById('radio-rapido').checked = true; // Força voltar para Vapt-Vupt
-                document.getElementById('modal-paywall').classList.remove('hidden'); // Sobe o paywall
+                abrirModalPaywall(); // Salta a janela do Mercado Pago na cara!
             }
         }
 
