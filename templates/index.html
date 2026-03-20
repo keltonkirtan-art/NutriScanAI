@@ -209,7 +209,7 @@
             <div class="bg-white rounded-2xl shadow-md p-6 border-l-4 border-teal-500">
                 <div id="loading" class="text-center py-4 hidden">
                     <i class="fas fa-circle-notch fa-spin text-teal-500 text-2xl"></i>
-                    <p class="mt-2 text-sm text-gray-500">Criando sua dieta personalizada...</p>
+                    <p class="mt-2 text-sm text-gray-500">Criando sua refeição personalizada...</p>
                 </div>
                 
                 <div id="conteudo-receita" class="prose prose-teal max-w-none"></div>
@@ -595,7 +595,7 @@
             if (error) {
                 alert("Erro ao salvar: " + error.message);
             } else {
-                alert("✅ Dados salvos com sucesso! Suas próximas dietas já usarão este perfil atualizado.");
+                alert("✅ Dados salvos com sucesso! Suas próximas refeições já usarão este perfil atualizado.");
             }
         }
 
@@ -722,7 +722,7 @@
             const peso = document.getElementById('peso').value || 70;
             const altura = document.getElementById('altura').value || 170;
 
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> MONTANDO DIETA...';
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> MONTANDO REFEIÇÃO...';
             btn.disabled = true;
             area.classList.remove('hidden');
             loading.classList.remove('hidden');
