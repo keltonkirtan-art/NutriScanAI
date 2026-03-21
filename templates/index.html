@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NutrIdeias IA | Seu Nutricionista Inteligente</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0f766e">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="NutrIdeias">
+    <link rel="apple-touch-icon" href="icon-192.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -230,6 +237,25 @@
             </div>
         </div>
     </main>
+
+        <div id="banner-instalacao" class="fixed bottom-0 left-0 w-full bg-slate-900 text-white p-4 shadow-[0_-4px_10px_rgba(0,0,0,0.2)] z-[90] hidden flex items-center justify-between rounded-t-2xl">
+            <div class="flex items-center gap-3">
+                <div class="bg-teal-500 w-10 h-10 rounded-xl flex items-center justify-center text-xl shadow-inner">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div>
+                    <p class="font-bold text-sm">Instalar NutrIdeias</p>
+                    <p id="texto-instalacao" class="text-[10px] text-gray-400">Adicione à tela inicial para usar como App.</p>
+                </div>
+            </div>
+            <button id="btn-instalar" class="bg-teal-500 text-white px-4 py-2 rounded-full text-xs font-bold hover:bg-teal-400">
+                INSTALAR
+            </button>
+            <button onclick="document.getElementById('banner-instalacao').classList.add('hidden')" class="text-gray-400 px-2">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+            
 
         <div id="modal-login" class="fixed inset-0 z-[100] hidden bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4">
             <div class="bg-white w-full max-w-sm rounded-3xl p-8 shadow-2xl relative">
@@ -789,6 +815,48 @@
                 btn.innerHTML = textoOriginal;
                 btn.disabled = false;
             });
+        }
+
+        // ==========================================
+        // 5. LÓGICA DE INSTALAÇÃO DO APP (PWA)
+        // ==========================================
+        let eventoInstalacao;
+
+        // Registra o Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').catch(err => console.error("Erro no SW:", err));
+        }
+
+        // Detecta Android/Chrome e libera o botão de Instalar
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            eventoInstalacao = e;
+            document.getElementById('banner-instalacao').classList.remove('hidden');
+        });
+
+        // Ação do botão de instalar (Android)
+        document.getElementById('btn-instalar').addEventListener('click', async () => {
+            if (eventoInstalacao) {
+                eventoInstalacao.prompt();
+                const { outcome } = await eventoInstalacao.userChoice;
+                if (outcome === 'accepted') {
+                    document.getElementById('banner-instalacao').classList.add('hidden');
+                }
+                eventoInstalacao = null;
+            }
+        });
+
+        // Detecta iPhone (Safari) e ensina como instalar manualmente
+        const isIos = () => {
+            const userAgent = window.navigator.userAgent.toLowerCase();
+            return /iphone|ipad|ipod/.test(userAgent);
+        };
+        const isStandalone = () => window.navigator.standalone;
+
+        if (isIos() && !isStandalone()) {
+            document.getElementById('banner-instalacao').classList.remove('hidden');
+            document.getElementById('btn-instalar').classList.add('hidden'); // Esconde o botão
+            document.getElementById('texto-instalacao').innerHTML = 'Toque em <i class="fas fa-external-link-alt mx-1"></i> e depois "Adicionar à Tela de Início"';
         }
 
         // Executa a verificação de segurança assim que a página é aberta
