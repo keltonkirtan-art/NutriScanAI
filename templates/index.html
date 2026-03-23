@@ -50,9 +50,49 @@
                 display: none !important;
             }
 
-            /* Ajuste para não cortar páginas no meio de parágrafos */
-            h2, h3 { page-break-after: avoid; }
-            div, p { page-break-inside: auto; }
+            /* ===== OTIMIZAÇÕES DE PAGE BREAK PARA MELHOR LEGIBILIDADE ===== */
+            /* Nunca quebra no meio de títulos */
+            h1, h2, h3, h4, h5, h6 { 
+                page-break-after: avoid;
+                page-break-inside: avoid;
+            }
+            
+            /* Evita quebra entre título e conteúdo associado */
+            h2 + p,
+            h3 + p,
+            h4 + p,
+            strong + p {
+                page-break-before: avoid;
+            }
+            
+            /* Mantém parágrafos com mínimo de linhas (orphans/widows) */
+            p {
+                page-break-inside: avoid;
+                orphans: 3;
+                widows: 3;
+            }
+            
+            /* Mantém listas inteiras na mesma página */
+            ul, ol, dl {
+                page-break-inside: avoid;
+            }
+            
+            li {
+                page-break-inside: avoid;
+            }
+            
+            /* Mantém blocos de instrução/preparação juntos */
+            div {
+                page-break-inside: avoid;
+            }
+            
+            /* Extra: garante que blocos com cores/estilos fiquem juntos */
+            *[class*="teal"],
+            *[class*="receita"],
+            *[class*="preparacao"],
+            *[class*="border-l"] {
+                page-break-inside: avoid;
+            }
         }
         /* Garante que o checkbox não "esmague" o texto */
         input[type="checkbox"] {
@@ -939,19 +979,25 @@
             btn.disabled = true;
 
             const opt = {
-                margin: [10, 10, 10, 10],
+                margin: [12, 10, 12, 10], // Aumentado para melhor espaçamento
                 filename: 'NutriScan-Plano.pdf',
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { 
                     scale: 2, 
                     useCORS: true, 
                     logging: false,
-                    letterRendering: true, // ⚠️ ESTA VÍRGULA AQUI É OBRIGATÓRIA!
+                    letterRendering: true,
                     scrollY: 0,
-                    windowWidth: document.documentElement.offsetWidth, // Lê a tela inteira
-                    windowHeight: document.documentElement.offsetHeight // Evita corte no mobile
+                    windowWidth: document.documentElement.offsetWidth,
+                    windowHeight: document.documentElement.offsetHeight
                 },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                jsPDF: { 
+                    unit: 'mm', 
+                    format: 'a4', 
+                    orientation: 'portrait',
+                    compress: true
+                },
+                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] } // 🔧 RESPETA CSS page-break!
             };
 
             html2pdf().set(opt).from(elemento).save().then(() => {
@@ -960,17 +1006,7 @@
                 btn.disabled = false;
             }).catch(err => {
                 console.error("Erro no PDF:", err);
-                mostrarToast("❌ Erro ao gerar PDF", 'erro');
-                btn.innerHTML = textoOriginal;
-                btn.disabled = false;
-            });
-        }
-
-        // ==========================================
-        // 5. LÓGICA DE INSTALAÇÃO DO APP (PWA)
-        // ==========================================
-        let eventoInstalacao;
-
+                mostrarToast("❌ Erro ao gerar PDF. Tente novamente.", 'erro');
         // Registra o Service Worker
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('sw.js').catch(err => {
