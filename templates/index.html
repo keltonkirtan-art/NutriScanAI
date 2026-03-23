@@ -544,16 +544,49 @@
         }
 
         async function fazerLogout() {
-            await clienteSupabase.auth.signOut();
-            window.location.reload(); 
+            try {
+                const { error } = await clienteSupabase.auth.signOut();
+                if (error) throw error;
+
+                // 🔄 IMPORTANTE PARA PWA NO IPHONE: 
+                // Ao deslogar, forçamos um reload total da página. 
+                // Isso limpa qualquer estado "preso" na memória do Safari dentro do PWA.
+                window.location.reload(); 
+            } catch (error) {
+                alert("Erro ao sair: " + error.message);
+            }
         }
 
         async function loginComGoogle() {
-            const { error } = await clienteSupabase.auth.signInWithOAuth({
-                provider: 'google',
-                options: { redirectTo: window.location.href }
-            });
-            if (error) alert('Erro ao entrar com Google: ' + error.message);
+            const btn = event ? event.currentTarget : document.querySelector('button[onclick="loginComGoogle()"]');
+            const originalText = btn ? btn.innerHTML : '';
+            
+            if (btn) {
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> CONECTANDO...';
+                btn.disabled = true;
+            }
+
+            try {
+                const { error } = await clienteSupabase.auth.signInWithOAuth({
+                    provider: 'google',
+                    options: {
+                        redirectTo: 'https://nutrideias.mk2mind.top',
+                        queryParams: {
+                            // 👇 O SEGREDO: Força o Google a mostrar a seleção de conta
+                            // Isso evita o erro de redirecionamento "silencioso" no iPhone
+                            prompt: 'select_account',
+                            access_type: 'offline',
+                        }
+                    }
+                });
+                if (error) throw error;
+            } catch (error) {
+                alert("Erro ao logar com Google: " + error.message);
+                if (btn) {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            }
         }
 
         // ==========================================
