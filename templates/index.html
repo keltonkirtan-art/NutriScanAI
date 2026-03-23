@@ -979,25 +979,23 @@
             btn.disabled = true;
 
             const opt = {
-                margin: [12, 10, 12, 10],
+                margin: [10, 10, 10, 10],
                 filename: 'NutriScan-Plano.pdf',
-                image: { type: 'png', quality: 0.98 },
+                image: { type: 'png', quality: 1 },
                 html2canvas: { 
-                    scale: 1.5,  // Reduzido de 2 para evitar compressão de texto
-                    useCORS: true, 
+                    scale: 1,  // Sem zoom - renderização 1:1
+                    useCORS: true,
                     logging: false,
-                    letterRendering: false,  // Desativado para melhor renderização de texto
-                    allowTaint: true,
                     backgroundColor: '#ffffff',
-                    scrollY: 0
+                    allowTaint: true,
+                    removeContainer: true
                 },
                 jsPDF: { 
                     unit: 'mm', 
                     format: 'a4', 
-                    orientation: 'portrait',
-                    compress: false  // Desativado para manter qualidade de texto
+                    orientation: 'portrait'
                 },
-                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+                pagebreak: { mode: ['css'] }
             };
 
             html2pdf().set(opt).from(elemento).save().then(() => {
