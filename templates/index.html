@@ -1007,6 +1007,11 @@
             }).catch(err => {
                 console.error("Erro no PDF:", err);
                 mostrarToast("❌ Erro ao gerar PDF. Tente novamente.", 'erro');
+                btn.innerHTML = textoOriginal;
+                btn.disabled = false;
+            });
+        }
+
         // Registra o Service Worker
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('sw.js').catch(err => {
