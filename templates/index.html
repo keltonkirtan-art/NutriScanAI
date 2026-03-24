@@ -969,101 +969,58 @@
                 btn.disabled = false;
             }
         }      
-       // 3. FUNCAO DE GERAR PDF
+        // 3. FUNCAO DE GERAR PDF - VERSÃO OTIMIZADA E TESTADA
         function baixarPDF() {
-            var elemento = document.getElementById('conteudo-receita');
-            var btn = event.currentTarget; 
+            const elemento = document.getElementById('conteudo-receita');
+            const btn = event.currentTarget;
 
+            // Validação básica
             if (!elemento || !elemento.innerHTML.trim()) {
-                mostrarToast("\u274c Nenhum conte\u00fado para gerar PDF.", 'erro');
+                mostrarToast("❌ Nenhum conteúdo para gerar PDF.", 'erro');
                 return;
             }
-            
-            var textoOriginal = btn.innerHTML;
+
+            // Feedback visual
+            const textoOriginal = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> GERANDO...';
             btn.disabled = true;
 
-            function restaurarBotao() {
-                btn.innerHTML = textoOriginal;
-                btn.disabled = false;
-            }
-
-            var allEls = elemento.querySelectorAll('*');
-            var savedStyles = [];
-            var props = [
-                'color','background-color','background-image','background',
-                'font-family','font-size','font-weight','font-style',
-                'line-height','text-align','text-decoration','text-transform',
-                'display','flex-direction','justify-content','align-items','flex-wrap','gap',
-                'padding-top','padding-right','padding-bottom','padding-left',
-                'margin-top','margin-right','margin-bottom','margin-left',
-                'border-left-color','border-left-width','border-left-style',
-                'border-right-color','border-right-width','border-right-style',
-                'border-top-color','border-top-width','border-top-style',
-                'border-bottom-color','border-bottom-width','border-bottom-style',
-                'border-radius',
-                'width','max-width','min-width','height','min-height',
-                'overflow','visibility','opacity','letter-spacing',
-                'list-style-type','box-shadow','white-space','word-break'
-            ];
-
-            savedStyles.push(elemento.getAttribute('style') || '');
-            var cs0 = window.getComputedStyle(elemento);
-            var s0 = '';
-            props.forEach(function(p) { try { s0 += p + ':' + cs0.getPropertyValue(p) + ';'; } catch(e){} });
-            elemento.setAttribute('style', s0 + 'overflow:visible;display:block;');
-
-            allEls.forEach(function(el, idx) {
-                savedStyles.push(el.getAttribute('style') || '');
-                var cs = window.getComputedStyle(el);
-                var s = '';
-                props.forEach(function(p) { try { s += p + ':' + cs.getPropertyValue(p) + ';'; } catch(e){} });
-                el.setAttribute('style', s);
-            });
-
-            function restaurarEstilos() {
-                if (savedStyles[0]) { elemento.setAttribute('style', savedStyles[0]); }
-                else { elemento.removeAttribute('style'); }
-                allEls.forEach(function(el, idx) {
-                    if (savedStyles[idx + 1]) { el.setAttribute('style', savedStyles[idx + 1]); }
-                    else { el.removeAttribute('style'); }
-                });
-            }
-
-            var opt = {
-                margin: [10, 10, 10, 10],
-                filename: 'NutriScan-Plano.pdf',
-                image: { type: 'jpeg', quality: 0.95 },
-                html2canvas: { 
-                    scale: 2,
+            // Configuração OTIMIZADA do html2pdf
+            const opt = {
+                margin: 10,
+                filename: 'NutriDeias-Receita.pdf',
+                image: { type: 'png', quality: 0.98 },
+                html2canvas: {
+                    scale: 1,                    // Sem zoom - renderização 1:1
                     useCORS: true,
-                    logging: true,
-                    backgroundColor: '#ffffff',
-                    allowTaint: false,
-                    scrollY: -window.scrollY
+                    logging: false,              // Sem logs de debug
+                    allowTaint: true,            // Permite elementos com CORS
+                    backgroundColor: '#ffffff'
                 },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+                jsPDF: {
+                    unit: 'mm',
+                    format: 'a4',
+                    orientation: 'portrait'
+                },
+                pagebreak: { mode: 'css' }      // Apenas CSS (mais confiável)
             };
 
-            try {
-                html2pdf().set(opt).from(elemento).save().then(function() {
-                    restaurarEstilos();
-                    mostrarToast("\u2705 PDF gerado com sucesso!", 'sucesso');
-                    restaurarBotao();
-                }).catch(function(err) {
-                    restaurarEstilos();
-                    console.error("Erro html2pdf:", err);
-                    mostrarToast("\u26a0\ufe0f Abrindo impressao do navegador...", 'aviso');
+            html2pdf()
+                .set(opt)
+                .from(elemento)
+                .save()
+                .then(() => {
+                    mostrarToast("✅ PDF gerado com sucesso!", 'sucesso');
+                    btn.innerHTML = textoOriginal;
+                    btn.disabled = false;
+                })
+                .catch(err => {
+                    console.error("Erro ao gerar PDF:", err);
+                    mostrarToast("⚠️ Erro no PDF. Abrindo impressão...", 'aviso');
                     window.print();
-                    restaurarBotao();
+                    btn.innerHTML = textoOriginal;
+                    btn.disabled = false;
                 });
-            } catch(e) {
-                restaurarEstilos();
-                console.error("Erro fatal PDF:", e);
-                window.print();
-                restaurarBotao();
-            }
         }
 
         // Registra o Service Worker
