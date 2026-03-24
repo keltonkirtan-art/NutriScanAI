@@ -873,7 +873,7 @@
                 const data = await response.json();
                 
                 if (data.receita) {
-                    conteudo.innerHTML = data.receita;
+                    conteudo.innerHTML = (data.receita || '').replace(/^```[a-z]*\n?/i, '').replace(/\n?```$/g, '').trim();
                     mostrarToast("✅ Receita pronta!", 'sucesso');
                 } else {
                     throw new Error(data.error || "Erro desconhecido no servidor.");
@@ -969,51 +969,101 @@
                 btn.disabled = false;
             }
         }      
-       // 3. FUNÇÃO DE GERAR PDF (Blindada contra erro de sintaxe e tela em branco)
+       // 3. FUNCAO DE GERAR PDF
         function baixarPDF() {
-            const elemento = document.getElementById('conteudo-receita');
-            const btn = event.currentTarget; 
+            var elemento = document.getElementById('conteudo-receita');
+            var btn = event.currentTarget; 
+
+            if (!elemento || !elemento.innerHTML.trim()) {
+                mostrarToast("\u274c Nenhum conte\u00fado para gerar PDF.", 'erro');
+                return;
+            }
             
-            const textoOriginal = btn.innerHTML;
+            var textoOriginal = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> GERANDO...';
             btn.disabled = true;
 
-            const opt = {
+            function restaurarBotao() {
+                btn.innerHTML = textoOriginal;
+                btn.disabled = false;
+            }
+
+            var allEls = elemento.querySelectorAll('*');
+            var savedStyles = [];
+            var props = [
+                'color','background-color','background-image','background',
+                'font-family','font-size','font-weight','font-style',
+                'line-height','text-align','text-decoration','text-transform',
+                'display','flex-direction','justify-content','align-items','flex-wrap','gap',
+                'padding-top','padding-right','padding-bottom','padding-left',
+                'margin-top','margin-right','margin-bottom','margin-left',
+                'border-left-color','border-left-width','border-left-style',
+                'border-right-color','border-right-width','border-right-style',
+                'border-top-color','border-top-width','border-top-style',
+                'border-bottom-color','border-bottom-width','border-bottom-style',
+                'border-radius',
+                'width','max-width','min-width','height','min-height',
+                'overflow','visibility','opacity','letter-spacing',
+                'list-style-type','box-shadow','white-space','word-break'
+            ];
+
+            savedStyles.push(elemento.getAttribute('style') || '');
+            var cs0 = window.getComputedStyle(elemento);
+            var s0 = '';
+            props.forEach(function(p) { try { s0 += p + ':' + cs0.getPropertyValue(p) + ';'; } catch(e){} });
+            elemento.setAttribute('style', s0 + 'overflow:visible;display:block;');
+
+            allEls.forEach(function(el, idx) {
+                savedStyles.push(el.getAttribute('style') || '');
+                var cs = window.getComputedStyle(el);
+                var s = '';
+                props.forEach(function(p) { try { s += p + ':' + cs.getPropertyValue(p) + ';'; } catch(e){} });
+                el.setAttribute('style', s);
+            });
+
+            function restaurarEstilos() {
+                if (savedStyles[0]) { elemento.setAttribute('style', savedStyles[0]); }
+                else { elemento.removeAttribute('style'); }
+                allEls.forEach(function(el, idx) {
+                    if (savedStyles[idx + 1]) { el.setAttribute('style', savedStyles[idx + 1]); }
+                    else { el.removeAttribute('style'); }
+                });
+            }
+
+            var opt = {
                 margin: [10, 10, 10, 10],
                 filename: 'NutriScan-Plano.pdf',
-                image: { type: 'jpeg', quality: 0.98 },
+                image: { type: 'jpeg', quality: 0.95 },
                 html2canvas: { 
                     scale: 2,
                     useCORS: true,
-                    logging: false,
+                    logging: true,
                     backgroundColor: '#ffffff',
-                    allowTaint: true,
-                    removeContainer: false,
-                    scrollX: 0,
-                    scrollY: -window.scrollY,
-                    windowWidth: document.documentElement.offsetWidth,
-                    windowHeight: document.documentElement.offsetHeight
+                    allowTaint: false,
+                    scrollY: -window.scrollY
                 },
-                jsPDF: { 
-                    unit: 'mm', 
-                    format: 'a4', 
-                    orientation: 'portrait'
-                },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
                 pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
             };
 
-            document.fonts.ready.then(() => {
-                html2pdf().set(opt).from(elemento).save().then(() => {
-                    mostrarToast("✅ PDF gerado com sucesso!", 'sucesso');
-                    btn.innerHTML = textoOriginal;
-                    btn.disabled = false;
-                }).catch(err => {
-                    console.error("Erro no PDF:", err);
-                    mostrarToast("❌ Erro ao gerar PDF. Tente novamente.", 'erro');
-                    btn.innerHTML = textoOriginal;
-                    btn.disabled = false;
+            try {
+                html2pdf().set(opt).from(elemento).save().then(function() {
+                    restaurarEstilos();
+                    mostrarToast("\u2705 PDF gerado com sucesso!", 'sucesso');
+                    restaurarBotao();
+                }).catch(function(err) {
+                    restaurarEstilos();
+                    console.error("Erro html2pdf:", err);
+                    mostrarToast("\u26a0\ufe0f Abrindo impressao do navegador...", 'aviso');
+                    window.print();
+                    restaurarBotao();
                 });
-            });
+            } catch(e) {
+                restaurarEstilos();
+                console.error("Erro fatal PDF:", e);
+                window.print();
+                restaurarBotao();
+            }
         }
 
         // Registra o Service Worker

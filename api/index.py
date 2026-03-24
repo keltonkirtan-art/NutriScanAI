@@ -9,6 +9,19 @@ app = Flask(__name__, template_folder="../templates", static_folder="../static")
 # Configuração do novo Cliente Google GenAI
 client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
+def limpar_resposta_ia(texto):
+    """Remove markdown code fences da resposta da IA"""
+    texto = texto.strip()
+    if texto.startswith('```'):
+        primeira_linha_fim = texto.find('\n')
+        if primeira_linha_fim != -1:
+            texto = texto[primeira_linha_fim + 1:]
+    if texto.endswith('```'):
+        texto = texto[:-3].rstrip()
+    return texto.strip()
+
+
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -100,7 +113,7 @@ def gerar():
             model="gemini-3.1-flash-lite-preview", 
             contents=prompt
         )
-        return jsonify({"receita": response.text})
+        return jsonify({"receita": limpar_resposta_ia(response.text)})
     except Exception as e:
         print(f"Erro na Receita: {e}")
         return jsonify({"error": str(e)}), 500
@@ -176,7 +189,7 @@ def gerar_semanal():
             contents=prompt
         )
      
-        return jsonify({"plano": response.text})
+        return jsonify({"plano": limpar_resposta_ia(response.text)})
     
     except Exception as e:
         print(f"Erro no Plano Semanal: {e}")
