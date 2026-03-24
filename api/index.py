@@ -52,10 +52,10 @@ def gerar():
         meta_proteina = round(peso * fator_prot)
         
         # 👇 AQUI ESTÁ A MÁGICA DO UPGRADE (Instruções muito mais exigentes para a IA) 👇
-        instrucao_tempo = "FOCO EM PRATICIDADE MÁXIMA: Refeição vapt-vupt de 15 até 30 min. Faça descrições curtas e diretas ao ponto." if tempo == 'rapido' else "FOCO EM ALTA GASTRONOMIA: Experiência 'Chef Pro' sem pressa. Crie um passo a passo EXTENSO e altamente detalhado. Descreva preparos longos, explique as técnicas culinárias utilizadas (como selagem, deglaçagem, marinadas ou reduções) e dê dicas de empratamento dignas de restaurante."
+        instrucao_tempo = "FOCO EM PRATICIDADE MÁXIMA: Refeição vapt-vupt de 15 até 30 min. Faça descrições curtas mas com qualidade nutricional sempre e diretas ao ponto." if tempo == 'rapido' else "FOCO EM ALTA GASTRONOMIA: Experiência 'Chef Pro' sem pressa. Crie um passo a passo EXTENSO e altamente detalhado. Descreva preparos longos, explique as técnicas culinárias utilizadas (como selagem, deglaçagem, marinadas ou reduções) e dê dicas de empratamento dignas de restaurante. Tanto para a refeição vapt-vupt quanto para o Chef Pro evite e desencoraje alimentos altamente processados e industrializados como salgadinhos em geral, doces processados e chocolates com baixa porcentagem de cacau, o foco sempre é na qualidade nutricional dentro do objetivo selecionado pelo usuário"
 
         prompt = f"""
-        Aja como um Nutricionista Clínico (pós-graduado em Nutrição Esportiva e Gastronomia) e Designer de UI.
+        Aja como um Nutricionista Clínico (pós-graduado em Nutrição Esportiva, tratamento da obesidade e Gastronomia) e Designer de UI.
         Crie uma solução nutricional para: {ingredientes}. Restrições: {restricoes}.
         Tempo disponível: {instrucao_tempo}
         
@@ -127,10 +127,10 @@ def gerar_semanal():
         imc = round(peso / (altura_m ** 2), 1)
 
         # 👇 AQUI ESTÁ O AJUSTE PARA O PLANO SEMANAL 👇
-        instrucao_tempo_semanal = "PRATICIDADE MÁXIMA: Sugira receitas curtas que usem a mesma base (batch cooking) para otimizar o tempo na cozinha." if tempo == 'rapido' else "ALTA GASTRONOMIA ('CHEF PRO'): Sugira preparos refinados e técnicas gourmet (marinadas, deglaçagem, reduções). IMPORTANTE: Seja direto e conciso nas instruções para garantir que o texto seja dinâmico para leitura no PDF. O foco é na sofisticação do sabor, não em textos longos."
+        instrucao_tempo_semanal = "PRATICIDADE MÁXIMA: Sugira receitas curtas que usem a mesma base (batch cooking) para otimizar o tempo na cozinha." if tempo == 'rapido' else "ALTA GASTRONOMIA ('CHEF PRO'): Sugira preparos refinados e técnicas gourmet (marinadas, deglaçagem, reduções). IMPORTANTE: Seja direto e conciso nas instruções para garantir que o texto seja dinâmico para leitura no PDF. O foco é na sofisticação do sabor, não em textos longos. Tanto para a refeição vapt-vupt quanto para o Chef Pro evite e desencoraje alimentos altamente processados e industrializados como salgadinhos em geral, doces processados e chocolates com baixa porcentagem de cacau, o foco sempre é na qualidade nutricional dentro do objetivo selecionado pelo usuário"
 
         prompt = f"""
-        Aja como um Nutricionista Clínico Esportivo (Especialista em Fisiologia e Gastronomia). 
+        Aja como um Nutricionista Clínico Esportivo (Especialista em Fisiologia, tratamento da obesidade e Gastronomia). 
         Crie um PLANEJAMENTO SEMANAL (7 dias) OBRIGATORIAMENTE COMPLETO para: {ingredientes}.
         
         PERFIL DO PACIENTE: Sexo: {sexo} | Idade: {idade} anos | Peso: {peso}kg | IMC: {imc}
@@ -142,7 +142,7 @@ def gerar_semanal():
 
         REGRAS DE CONTEÚDO (CRÍTICO):
         1. GERE EXATAMENTE 7 DIAS (Segunda a Domingo). Não pare de gerar antes de terminar o Domingo.
-        2. VARIEDADE: Não use apenas os itens listados. Adicione vegetais, fontes de fibras e gorduras boas.
+        2. VARIEDADE: Não use apenas os itens listados. Adicione vegetais, hortaliças, frutas e fontes de fibras e gorduras boas.
         3. SUBSTITUTOS: Em cada proteína ou carbo, sugira uma opção (Ex: Frango ou Tofu).
         
         FORMATO DE SAÍDA (HTML ESTRITO):

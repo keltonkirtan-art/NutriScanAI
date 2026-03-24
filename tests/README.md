@@ -1,4 +1,4 @@
-# 🧪 NutriScanAI Test Suite with TestSprite
+# 🧪 NutrIdeias IA Test Suite with TestSprite
 
 ## Setup
 
