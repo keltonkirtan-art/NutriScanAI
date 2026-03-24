@@ -981,32 +981,38 @@
             const opt = {
                 margin: [10, 10, 10, 10],
                 filename: 'NutriScan-Plano.pdf',
-                image: { type: 'png', quality: 1 },
+                image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { 
-                    scale: 1,  // Sem zoom - renderização 1:1
+                    scale: 2,
                     useCORS: true,
                     logging: false,
                     backgroundColor: '#ffffff',
                     allowTaint: true,
-                    removeContainer: true
+                    removeContainer: false,
+                    scrollX: 0,
+                    scrollY: -window.scrollY,
+                    windowWidth: document.documentElement.offsetWidth,
+                    windowHeight: document.documentElement.offsetHeight
                 },
                 jsPDF: { 
                     unit: 'mm', 
                     format: 'a4', 
                     orientation: 'portrait'
                 },
-                pagebreak: { mode: ['css'] }
+                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
             };
 
-            html2pdf().set(opt).from(elemento).save().then(() => {
-                mostrarToast("✅ PDF gerado com sucesso!", 'sucesso');
-                btn.innerHTML = textoOriginal;
-                btn.disabled = false;
-            }).catch(err => {
-                console.error("Erro no PDF:", err);
-                mostrarToast("❌ Erro ao gerar PDF. Tente novamente.", 'erro');
-                btn.innerHTML = textoOriginal;
-                btn.disabled = false;
+            document.fonts.ready.then(() => {
+                html2pdf().set(opt).from(elemento).save().then(() => {
+                    mostrarToast("✅ PDF gerado com sucesso!", 'sucesso');
+                    btn.innerHTML = textoOriginal;
+                    btn.disabled = false;
+                }).catch(err => {
+                    console.error("Erro no PDF:", err);
+                    mostrarToast("❌ Erro ao gerar PDF. Tente novamente.", 'erro');
+                    btn.innerHTML = textoOriginal;
+                    btn.disabled = false;
+                });
             });
         }
 
