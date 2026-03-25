@@ -985,67 +985,143 @@
                 btn.disabled = false;
             }
         }      
-        // 3. FUNÇÃO DE GERAR PDF - VERSÃO CORRIGIDA (Funciona Mobile + Desktop)
-        function baixarPDF() {
+        // 3. FUNÇÃO DE GERAR PDF - VERSÃO ROBUSTA COM DEBUG
+        async function baixarPDF() {
             const elemento = document.getElementById('conteudo-receita');
             const btn = event.currentTarget;
 
-            // Validação básica
+            // ============================================
+            // VALIDAÇÃO INICIAL
+            // ============================================
             if (!elemento || !elemento.innerHTML.trim()) {
                 mostrarToast("❌ Nenhum conteúdo para gerar PDF.", 'erro');
                 return;
             }
 
-            // Cria um clone para não afetar o DOM original
-            const elementoClone = elemento.cloneNode(true);
-            
-            // Feedback visual
+            // Verificar se html2pdf está carregado
+            if (typeof html2pdf === 'undefined') {
+                mostrarToast("❌ Bibliotecas não carregadas. Recarregue a página.", 'erro');
+                return;
+            }
+
+            // ============================================
+            // PREPARAÇÃO
+            // ============================================
             const textoOriginal = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> GERANDO...';
             btn.disabled = true;
 
-            // Configuração para html2pdf
+            // Cria um wrapper com espaçamento para melhor renderização
+            const wrapper = document.createElement('div');
+            wrapper.style.backgroundColor = '#ffffff';
+            wrapper.style.padding = '20px';
+            wrapper.style.fontFamily = 'Arial, sans-serif';
+            
+            // Clone o elemento para não afetar o DOM
+            const elementoClone = elemento.cloneNode(true);
+            wrapper.appendChild(elementoClone);
+
+            // ============================================
+            // CONFIGURAÇÃO OTIMIZADA
+            // ============================================
             const config = {
-                margin: [8, 8, 8, 8],
+                margin: [10, 10, 10, 10],
                 filename: 'NutriDeias-Receita.pdf',
                 image: { 
                     type: 'jpeg', 
                     quality: 0.98 
                 },
                 html2canvas: {
-                    scale: 2,
+                    scale: 2.5,           // ✅ Aumentado para melhor qualidade
                     useCORS: true,
                     logging: false,
                     backgroundColor: '#ffffff',
                     allowTaint: true,
                     removeContainer: true,
                     letterSpacing: 0,
-                    windowHeight: document.documentElement.scrollHeight
+                    windowHeight: wrapper.scrollHeight + 100  // ✅ Usa altura real do wrapper
                 },
                 jsPDF: {
                     unit: 'mm',
                     format: 'a4',
-                    orientation: 'portrait'
+                    orientation: 'portrait',
+                    compress: true
                 }
             };
 
-            // Executa o html2pdf
-            html2pdf()
-                .set(config)
-                .from(elementoClone)
-                .save()
-                .then(() => {
-                    mostrarToast("✅ PDF gerado com sucesso!", 'sucesso');
-                    btn.innerHTML = textoOriginal;
-                    btn.disabled = false;
-                })
-                .catch(err => {
-                    console.error("Erro ao gerar PDF:", err);
-                    mostrarToast("⚠️ Erro no PDF. Abrindo impressão...", 'aviso');
-                    setTimeout(() => window.print(), 300);
-                    btn.innerHTML = textoOriginal;
-                    btn.disabled = false;
-                });
+            try {
+                console.log('📄 Iniciando geração de PDF...');
+                console.log('Conteúdo:', elementoClone.innerHTML.substring(0, 100) + '...');
+                console.log('Config:', config);
+
+                // Tenta gerar o PDF
+                const pdf = html2pdf()
+                    .set(config)
+                    .from(wrapper)
+                    .toPdf()
+                    .get('pdf')
+                    .then((pdf) => {
+                        const pages = pdf.internal.pages.length;
+                        console.log(`✅ PDF gerado com ${pages} página(s)`);
+                        return pdf;
+                    });
+
+                await pdf.save();
+
+                mostrarToast("✅ PDF gerado com sucesso!", 'sucesso');
+                console.log('✅ PDF salvo com sucesso');
+
+            } catch (error) {
+                console.error("❌ Erro na geração de PDF:", error);
+                console.error("Stack:", error.stack);
+
+                // ============================================
+                // FALLBACK 1: Tentar com configuração simplificada
+                // ============================================
+                try {
+                    console.log('🔄 Tentando fallback com configuração simplificada...');
+                    
+                    const configSimples = {
+                        margin: 10,
+                        filename: 'NutriDeias-Receita.pdf',
+                        image: { type: 'png', quality: 0.98 },
+                        html2canvas: { scale: 2 },
+                        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                    };
+
+                    await html2pdf().set(configSimples).from(wrapper).save();
+                    mostrarToast("✅ PDF gerado com configuração alternativa!", 'sucesso');
+                    console.log('✅ Fallback bem-sucedido');
+
+                } catch (fallbackError) {
+                    console.error("❌ Fallback falhou também:", fallbackError);
+                    
+                    // ============================================
+                    // FALLBACK 2: Abrir impressão (último recurso)
+                    // ============================================
+                    mostrarToast("⚠️ Abrindo impressão do navegador...", 'aviso');
+                    console.log('🖨️ Abrindo print dialog');
+                    
+                    // Cria uma janela com o conteúdo para impressão
+                    const printWindow = window.open('', '', 'height=400,width=600');
+                    printWindow.document.write('<html><head><title>Imprimir Receita</title></head><body>');
+                    printWindow.document.write(wrapper.innerHTML);
+                    printWindow.document.write('</body></html>');
+                    printWindow.document.close();
+                    
+                    setTimeout(() => {
+                        printWindow.print();
+                        printWindow.close();
+                    }, 250);
+                }
+
+            } finally {
+                // ============================================
+                // RESTAURAR BOTÃO
+                // ============================================
+                btn.innerHTML = textoOriginal;
+                btn.disabled = false;
+            }
         }
 
         // Registra o Service Worker

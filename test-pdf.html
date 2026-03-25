@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧪 Teste PDF - NutriDeias</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body class="bg-gray-50 p-8">
+    <div class="max-w-2xl mx-auto">
+        <div class="bg-white rounded-2xl shadow-lg p-8">
+            <h1 class="text-3xl font-bold text-teal-600 mb-2">
+                <i class="fas fa-file-pdf mr-2"></i>Teste de PDF
+            </h1>
+            <p class="text-gray-600 mb-8">Verifica se a geração de PDF está funcionando corretamente.</p>
+
+            <div class="bg-teal-50 border-l-4 border-teal-500 p-4 mb-8 rounded">
+                <p class="text-sm text-teal-800">
+                    <strong>📋 Passos:</strong>
+                    <br>1. Clique em "GERAR CONTEÚDO TESTE" para criar uma receita de exemplo
+                    <br>2. Clique em "BAIXAR PDF" para gerar o arquivo
+                    <br>3. Verifique se o PDF aparece com conteúdo (não em branco)
+                    <br>4. Abra o console (F12) para ver mensagens de debug
+                </p>
+            </div>
+
+            <!-- ÁREA DE CONTEÚDO DE TESTE -->
+            <div id="conteudo-receita" class="hidden bg-gray-50 p-4 rounded-lg mb-6 border border-gray-200">
+                <div id="conteudo-teste"></div>
+            </div>
+
+            <!-- BOTÕES DE CONTROLE -->
+            <div class="flex gap-3 mb-6">
+                <button onclick="gerarConteudoTeste()" class="flex-1 bg-teal-600 text-white py-3 px-4 rounded-lg hover:bg-teal-700 transition font-bold">
+                    <i class="fas fa-refresh mr-2"></i>GERAR CONTEÚDO TESTE
+                </button>
+                <button onclick="testarPDF()" class="flex-1 bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition font-bold">
+                    <i class="fas fa-download mr-2"></i>BAIXAR PDF
+                </button>
+                <button onclick="testarPDFSimples()" class="flex-1 bg-orange-600 text-white py-3 px-4 rounded-lg hover:bg-orange-700 transition font-bold">
+                    <i class="fas fa-file mr-2"></i>PDF SIMPLES
+                </button>
+            </div>
+
+            <!-- LOGS DE DEBUG -->
+            <div class="bg-slate-900 text-green-400 p-4 rounded-lg font-mono text-xs overflow-y-auto max-h-64">
+                <div id="logs">
+                    <p><i class="fas fa-info-circle"></i> Console de debug...</p>
+                </div>
+            </div>
+
+            <!-- INFORMAÇÕES DO AMBIENTE -->
+            <div class="mt-8 bg-gray-100 p-4 rounded-lg">
+                <h3 class="font-bold mb-2">ℹ️ Informações do Ambiente</h3>
+                <div class="text-sm text-gray-700 space-y-1">
+                    <p><strong>html2pdf:</strong> <span id="html2pdf-status">❓ Verificando...</span></p>
+                    <p><strong>Browser:</strong> <span id="browser-info">❓ Detectando...</span></p>
+                    <p><strong>Plataforma:</strong> <span id="platform-info">❓ Detectando...</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // LOGGER CUSTOMIZADO
+        // ============================================
+        const logsDiv = document.getElementById('logs');
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const icon = {
+                'info': '📘',
+                'success': '✅',
+                'error': '❌',
+                'warning': '⚠️'
+            }[type] || '•';
+            
+            const p = document.createElement('p');
+            p.innerHTML = `<span class="text-gray-500">[${timestamp}]</span> ${icon} ${message}`;
+            logsDiv.appendChild(p);
+            logsDiv.parentElement.scrollTop = logsDiv.parentElement.scrollHeight;
+            console.log(`${icon} ${message}`);
+        }
+
+        // ============================================
+        // VERIFICAR AMBIENTE
+        // ============================================
+        window.addEventListener('DOMContentLoaded', () => {
+            // Checar html2pdf
+            if (typeof html2pdf !== 'undefined') {
+                document.getElementById('html2pdf-status').innerHTML = '✅ Carregado';
+                log('✅ html2pdf.js foi carregado com sucesso', 'success');
+            } else {
+                document.getElementById('html2pdf-status').innerHTML = '❌ Não carregado';
+                log('❌ html2pdf.js NÃO foi carregado', 'error');
+            }
+
+            // Checar browser
+            const userAgent = navigator.userAgent;
+            if (userAgent.indexOf('Chrome') > -1) {
+                document.getElementById('browser-info').innerHTML = 'Chrome';
+            } else if (userAgent.indexOf('Safari') > -1) {
+                document.getElementById('browser-info').innerHTML = 'Safari';
+            } else if (userAgent.indexOf('Firefox') > -1) {
+                document.getElementById('browser-info').innerHTML = 'Firefox';
+            } else if (userAgent.indexOf('Edge') > -1) {
+                document.getElementById('browser-info').innerHTML = 'Edge';
+            } else {
+                document.getElementById('browser-info').innerHTML = 'Outro';
+            }
+
+            // Plataforma
+            if (navigator.platform.indexOf('Mac') > -1) {
+                document.getElementById('platform-info').innerHTML = 'macOS';
+            } else if (navigator.platform.indexOf('Win') > -1) {
+                document.getElementById('platform-info').innerHTML = 'Windows';
+            } else if (navigator.platform.indexOf('Linux') > -1) {
+                document.getElementById('platform-info').innerHTML = 'Linux';
+            }
+        });
+
+        // ============================================
+        // GERAR CONTEÚDO TESTE
+        // ============================================
+        function gerarConteudoTeste() {
+            log('📝 Gerando conteúdo de teste...', 'info');
+            
+            const html = `
+                <h1 style="color: #0f766e; font-size: 28px; font-weight: bold; margin-bottom: 16px;">
+                    🍗 Frango Grelhado com Abóbora
+                </h1>
+                
+                <div style="background-color: #f0fdfa; padding: 12px; border-radius: 8px; margin-bottom: 16px;">
+                    <p style="margin: 0; font-size: 14px; color: #0f766e;">
+                        <strong>⏱️ Tempo:</strong> 25 minutos | 
+                        <strong>📊 Calorias:</strong> 350 kcal
+                    </p>
+                </div>
+
+                <h2 style="color: #0f766e; font-size: 20px; font-weight: bold; margin-top: 16px; margin-bottom: 10px;">
+                    📋 Ingredientes
+                </h2>
+                <ul style="list-style: none; padding: 0; margin: 0;">
+                    <li style="margin-bottom: 8px;">• 180g de peito de frango</li>
+                    <li style="margin-bottom: 8px;">• 200g de abóbora</li>
+                    <li style="margin-bottom: 8px;">• 1 colher de azeite</li>
+                    <li style="margin-bottom: 8px;">• Sal e pimenta a gosto</li>
+                    <li style="margin-bottom: 8px;">• Limão fresco</li>
+                </ul>
+
+                <h2 style="color: #0f766e; font-size: 20px; font-weight: bold; margin-top: 16px; margin-bottom: 10px;">
+                    👨‍🍳 Modo de Preparo
+                </h2>
+                <ol style="list-style: decimal; list-style-position: inside;">
+                    <li style="margin-bottom: 8px;"><strong>Preparar o frango:</strong> Tempere o peito de frango com sal, pimenta e limão</li>
+                    <li style="margin-bottom: 8px;"><strong>Grelhar:</strong> Leve à grelha ou frigideira aquecida por 12 minutos de cada lado</li>
+                    <li style="margin-bottom: 8px;"><strong>Preparar a abóbora:</strong> Corte em cubos e grelhe com azeite</li>
+                    <li style="margin-bottom: 8px;"><strong>Montar o prato:</strong> Disponha o frango e a abóbora no prato</li>
+                </ol>
+
+                <div style="background-color: #fef3c7; padding: 12px; border-radius: 8px; margin-top: 16px; border-left: 4px solid #f59e0b;">
+                    <p style="margin: 0; font-size: 13px; color: #78350f;">
+                        ⚠️ <strong>Aviso Legal:</strong> Este conteúdo é apenas informativo. Consulte um nutricionista antes de iniciar qualquer dieta.
+                    </p>
+                </div>
+            `;
+
+            document.getElementById('conteudo-teste').innerHTML = html;
+            document.getElementById('conteudo-receita').classList.remove('hidden');
+            
+            log('✅ Conteúdo de teste gerado com sucesso', 'success');
+            log(`📊 Tamanho do conteúdo: ${html.length} caracteres`, 'info');
+        }
+
+        // ============================================
+        // TESTAR PDF - VERSÃO COMPLETA
+        // ============================================
+        async function testarPDF() {
+            const elemento = document.getElementById('conteudo-receita');
+            
+            if (elemento.classList.contains('hidden')) {
+                log('❌ Clique em "GERAR CONTEÚDO TESTE" primeiro', 'error');
+                return;
+            }
+
+            log('🚀 Iniciando geração de PDF (versão robusta)...', 'info');
+
+            try {
+                // Verificar html2pdf
+                if (typeof html2pdf === 'undefined') {
+                    log('❌ html2pdf não carregado. Recarregue a página.', 'error');
+                    return;
+                }
+                log('✅ html2pdf encontrado', 'success');
+
+                // Criar wrapper
+                const wrapper = document.createElement('div');
+                wrapper.style.backgroundColor = '#ffffff';
+                wrapper.style.padding = '20px';
+                wrapper.style.fontFamily = 'Arial, sans-serif';
+                
+                const clone = elemento.cloneNode(true);
+                clone.classList.remove('hidden');
+                wrapper.appendChild(clone);
+                
+                log('✅ Elemento clonado com sucesso', 'success');
+                log(`📏 Altura do wrapper: ${wrapper.scrollHeight}px`, 'info');
+
+                // Configuração
+                const config = {
+                    margin: [10, 10, 10, 10],
+                    filename: 'teste-receita.pdf',
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: {
+                        scale: 2.5,
+                        useCORS: true,
+                        logging: true,
+                        backgroundColor: '#ffffff',
+                        allowTaint: true,
+                        removeContainer: true,
+                        letterSpacing: 0,
+                        windowHeight: wrapper.scrollHeight + 100
+                    },
+                    jsPDF: {
+                        unit: 'mm',
+                        format: 'a4',
+                        orientation: 'portrait',
+                        compress: true
+                    }
+                };
+
+                log('⚙️ Configuração definida', 'info');
+                log('📊 Escala: 2.5x | Formato: JPEG | Qualidade: 98%', 'info');
+
+                // Gerar PDF
+                const pdf = html2pdf()
+                    .set(config)
+                    .from(wrapper);
+
+                log('⏳ Renderer em progresso...', 'info');
+                
+                await pdf
+                    .toPdf()
+                    .get('pdf')
+                    .then((pdfObj) => {
+                        const pages = pdfObj.internal.pages.length;
+                        log(`✅ PDF renderizado com sucesso: ${pages} página(s)`, 'success');
+                        return pdfObj;
+                    })
+                    .then((pdfObj) => {
+                        pdfObj.save();
+                        log('💾 PDF baixado com sucesso!', 'success');
+                    });
+
+            } catch (error) {
+                log(`❌ ERRO: ${error.message}`, 'error');
+                log(`📍 Stack: ${error.stack}`, 'error');
+                log('🔄 Tentando fallback simples...', 'warning');
+                
+                // Fallback
+                try {
+                    await html2pdf()
+                        .set({
+                            margin: 10,
+                            filename: 'teste-receita-fallback.pdf',
+                            image: { type: 'png', quality: 0.98 },
+                            html2canvas: { scale: 2 },
+                            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                        })
+                        .from(document.getElementById('conteudo-receita'))
+                        .save();
+                    
+                    log('✅ Fallback bem-sucedido! PDF gerado com configuração alternativa', 'success');
+                } catch (fallbackError) {
+                    log(`❌ Fallback also failed: ${fallbackError.message}`, 'error');
+                }
+            }
+        }
+
+        // ============================================
+        // TESTAR PDF - VERSÃO SIMPLIFICADA
+        // ============================================
+        async function testarPDFSimples() {
+            const elemento = document.getElementById('conteudo-receita');
+            
+            if (elemento.classList.contains('hidden')) {
+                log('❌ Clique em "GERAR CONTEÚDO TESTE" primeiro', 'error');
+                return;
+            }
+
+            log('🚀 Iniciando geração de PDF (versão simplificada)...', 'info');
+
+            try {
+                if (typeof html2pdf === 'undefined') {
+                    log('❌ html2pdf não disponível', 'error');
+                    return;
+                }
+
+                const config = {
+                    margin: 10,
+                    filename: 'teste-simples.pdf',
+                    image: { type: 'png', quality: 0.98 },
+                    html2canvas: { scale: 2, backgroundColor: '#ffffff' },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                };
+
+                log('⏳ Gerando PDF com configuração mínima...', 'info');
+                
+                await html2pdf()
+                    .set(config)
+                    .from(elemento)
+                    .save();
+
+                log('✅ PDF gerado e baixado com sucesso!', 'success');
+
+            } catch (error) {
+                log(`❌ ERRO: ${error.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>
