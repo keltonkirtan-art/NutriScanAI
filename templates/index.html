@@ -969,7 +969,7 @@
                 btn.disabled = false;
             }
         }      
-        // 3. FUNCAO DE GERAR PDF - VERSÃO OTIMIZADA E TESTADA
+        // 3. FUNÇÃO DE GERAR PDF - VERSÃO CORRIGIDA (Funciona Mobile + Desktop)
         function baixarPDF() {
             const elemento = document.getElementById('conteudo-receita');
             const btn = event.currentTarget;
@@ -980,34 +980,43 @@
                 return;
             }
 
+            // Cria um clone para não afetar o DOM original
+            const elementoClone = elemento.cloneNode(true);
+            
             // Feedback visual
             const textoOriginal = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> GERANDO...';
             btn.disabled = true;
 
-            // Configuração OTIMIZADA do html2pdf
-            const opt = {
-                margin: 10,
+            // Configuração para html2pdf
+            const config = {
+                margin: [8, 8, 8, 8],
                 filename: 'NutriDeias-Receita.pdf',
-                image: { type: 'png', quality: 0.98 },
+                image: { 
+                    type: 'jpeg', 
+                    quality: 0.98 
+                },
                 html2canvas: {
-                    scale: 1,                    // Sem zoom - renderização 1:1
+                    scale: 2,
                     useCORS: true,
-                    logging: false,              // Sem logs de debug
-                    allowTaint: true,            // Permite elementos com CORS
-                    backgroundColor: '#ffffff'
+                    logging: false,
+                    backgroundColor: '#ffffff',
+                    allowTaint: true,
+                    removeContainer: true,
+                    letterSpacing: 0,
+                    windowHeight: document.documentElement.scrollHeight
                 },
                 jsPDF: {
                     unit: 'mm',
                     format: 'a4',
                     orientation: 'portrait'
-                },
-                pagebreak: { mode: 'css' }      // Apenas CSS (mais confiável)
+                }
             };
 
+            // Executa o html2pdf
             html2pdf()
-                .set(opt)
-                .from(elemento)
+                .set(config)
+                .from(elementoClone)
                 .save()
                 .then(() => {
                     mostrarToast("✅ PDF gerado com sucesso!", 'sucesso');
@@ -1017,7 +1026,7 @@
                 .catch(err => {
                     console.error("Erro ao gerar PDF:", err);
                     mostrarToast("⚠️ Erro no PDF. Abrindo impressão...", 'aviso');
-                    window.print();
+                    setTimeout(() => window.print(), 300);
                     btn.innerHTML = textoOriginal;
                     btn.disabled = false;
                 });
