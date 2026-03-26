@@ -65,10 +65,10 @@ def gerar():
         meta_proteina = round(peso * fator_prot)
         
         # 👇 AQUI ESTÁ A MÁGICA DO UPGRADE (Instruções muito mais exigentes para a IA) 👇
-        instrucao_tempo = "FOCO EM PRATICIDADE MÁXIMA: Refeição vapt-vupt de 15 até 30 min. Faça descrições curtas mas com qualidade nutricional sempre e diretas ao ponto." if tempo == 'rapido' else "FOCO EM ALTA GASTRONOMIA: Experiência 'Chef Pro' sem pressa. Crie um passo a passo EXTENSO e altamente detalhado. Descreva preparos longos, explique as técnicas culinárias utilizadas (como selagem, deglaçagem, marinadas ou reduções) e dê dicas de empratamento dignas de restaurante. Tanto para a refeição vapt-vupt quanto para o Chef Pro evite e desencoraje alimentos altamente processados e industrializados como salgadinhos em geral, doces processados e chocolates com baixa porcentagem de cacau, o foco sempre é na qualidade nutricional dentro do objetivo selecionado pelo usuário"
+        instrucao_tempo = "FOCO EM PRATICIDADE MÁXIMA: Refeição vapt-vupt de 15 até 30 min. Faça descrições curtas mas com qualidade nutricional sempre e diretas ao ponto." if tempo == 'rapido' else "FOCO EM ALTA GASTRONOMIA: Experiência 'Chef Pro' sem pressa. Crie um passo a passo EXTENSO e altamente detalhado e bem explicado. Descreva preparos longos, explique as técnicas culinárias utilizadas (como selagem, deglaçagem, marinadas ou reduções) e dê dicas de empratamento dignas de restaurante. Tanto para a refeição vapt-vupt quanto para o Chef Pro evite e desencoraje alimentos altamente processados e industrializados como salgadinhos em geral, doces processados e chocolates com baixa porcentagem de cacau, o foco sempre é na qualidade nutricional dentro do objetivo selecionado pelo usuário"
 
         prompt = f"""
-        Aja como um Nutricionista Clínico (pós-graduado em Nutrição Esportiva, tratamento da obesidade e Gastronomia) e Designer de UI.
+        Aja como um Nutricionista Clínico (pós-graduado em Nutrição Esportiva, tratamento da obesidade e Gastronomia) e Chef de Gastronomia.
         Crie uma solução nutricional para: {ingredientes}. Restrições: {restricoes}.
         Tempo disponível: {instrucao_tempo}
         
