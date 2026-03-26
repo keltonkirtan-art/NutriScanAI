@@ -74,6 +74,39 @@
             margin-bottom: 2px;
         }
 
+        /* ==========================================
+           TOAST NOTIFICATIONS STYLES
+           ========================================== */
+        @keyframes slideInRight {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+
+        .toast-notification {
+            animation: slideInRight 0.3s ease-out;
+        }
+
+        .toast-notification.fade-out {
+            animation: slideOutRight 0.3s ease-in forwards;
+        }
+
     </style>
 </head>
 <body class="bg-gray-50 font-sans text-gray-800">
@@ -327,6 +360,34 @@
 
     <script> 
         // ==========================================
+        // 0. SISTEMA DE TOAST NOTIFICATIONS
+        // ==========================================
+        function mostrarToast(mensagem, tipo = 'info', duracao = 3000) {
+            const toast = document.createElement('div');
+            const cores = {
+                'sucesso': 'bg-green-500',
+                'erro': 'bg-red-500',
+                'aviso': 'bg-yellow-500',
+                'info': 'bg-blue-500'
+            };
+            const ícones = {
+                'sucesso': 'fa-check-circle',
+                'erro': 'fa-exclamation-circle',
+                'aviso': 'fa-triangle-exclamation',
+                'info': 'fa-circle-info'
+            };
+            
+            toast.className = `toast-notification fixed top-4 right-4 ${cores[tipo]} text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-3 z-[999]`;
+            toast.innerHTML = `<i class="fas ${ícones[tipo]}"></i> <span>${mensagem}</span>`;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.add('fade-out');
+                setTimeout(() => toast.remove(), 300);
+            }, duracao);
+        }
+
+        // ==========================================
         // 1. CONFIGURAÇÃO DO SUPABASE (A CORREÇÃO ESTÁ AQUI!)
         // ==========================================
         const supabaseUrl = 'https://tbmipzwxocrmgmivtkds.supabase.co';
@@ -476,7 +537,17 @@
             const senha = document.getElementById('login-senha').value;
 
             if (!email || !senha) {
-                alert("Por favor, preencha seu e-mail e crie uma senha!");
+                mostrarToast("📧 Preencha e-mail e senha!", 'aviso');
+                return;
+            }
+
+            if (!email.includes('@') || !email.includes('.')) {
+                mostrarToast("📧 E-mail inválido!", 'aviso');
+                return;
+            }
+
+            if (senha.length < 6) {
+                mostrarToast("🔐 Senha deve ter 6+ caracteres", 'aviso');
                 return;
             }
 
@@ -486,9 +557,11 @@
             });
 
             if (error) {
-                alert("Erro ao criar conta: " + error.message);
+                mostrarToast("❌ Erro: " + error.message, 'erro');
             } else {
-                alert("Conta criada com sucesso! Você já pode clicar em ENTRAR AGORA.");
+                mostrarToast("✅ Conta criada! Faça login agora.", 'sucesso');
+                document.getElementById('login-email').value = '';
+                document.getElementById('login-senha').value = '';
             }
         }
 
@@ -498,7 +571,7 @@
             const senha = document.getElementById('login-senha').value;
 
             if (!email || !senha) {
-                alert("Por favor, digite seu e-mail e senha!");
+                mostrarToast("📧 Digite e-mail e senha!", 'aviso');
                 return;
             }
 
@@ -520,7 +593,13 @@
 
                 if (error) {
                     // Se der erro (ex: senha errada), avisa o motivo e destrava o botão!
-                    alert("Acesso negado: " + error.message);
+                    if (error.message.includes('Invalid login credentials')) {
+                        mostrarToast("❌ E-mail ou senha incorretos", 'erro');
+                    } else if (error.message.includes('Email not confirmed')) {
+                        mostrarToast("📧 Confirme seu e-mail antes de entrar", 'aviso');
+                    } else {
+                        mostrarToast("❌ " + error.message, 'erro');
+                    }
                     if (btn) {
                         btn.innerHTML = textoOriginal;
                         btn.disabled = false;
@@ -531,12 +610,14 @@
                         btn.innerHTML = textoOriginal;
                         btn.disabled = false;
                     }
+                    mostrarToast("✅ Bem-vindo!", 'sucesso');
                     fecharModalLogin();
                     // Não precisamos dar "reload". O `onAuthStateChange` vai perceber o login e liberar a tela na mesma hora!
                 }
             } catch (err) {
                 // Se faltar internet ou der pane no navegador, ele avisa!
-                alert("Erro de conexão: " + err.message);
+                mostrarToast("🌐 Erro de conexão. Verifique sua internet", 'erro');
+                console.error('Login error:', err);
                 if (btn) {
                     btn.innerHTML = textoOriginal;
                     btn.disabled = false;
@@ -545,16 +626,51 @@
         }
 
         async function fazerLogout() {
-            await clienteSupabase.auth.signOut();
-            window.location.reload(); 
+            try {
+                const { error } = await clienteSupabase.auth.signOut();
+                if (error) throw error;
+
+                mostrarToast("👋 Até logo!", 'sucesso');
+                // 🔄 IMPORTANTE PARA PWA NO IPHONE: 
+                // Ao deslogar, forçamos um reload total da página. 
+                // Isso limpa qualquer estado "preso" na memória do Safari dentro do PWA.
+                setTimeout(() => window.location.reload(), 500);
+            } catch (error) {
+                mostrarToast("❌ Erro ao sair: " + error.message, 'erro');
+            }
         }
 
         async function loginComGoogle() {
-            const { error } = await clienteSupabase.auth.signInWithOAuth({
-                provider: 'google',
-                options: { redirectTo: window.location.href }
-            });
-            if (error) alert('Erro ao entrar com Google: ' + error.message);
+            const btn = event ? event.currentTarget : document.querySelector('button[onclick="loginComGoogle()"]');
+            const originalText = btn ? btn.innerHTML : '';
+            
+            if (btn) {
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> CONECTANDO...';
+                btn.disabled = true;
+            }
+
+            try {
+                const { error } = await clienteSupabase.auth.signInWithOAuth({
+                    provider: 'google',
+                    options: {
+                        redirectTo: 'https://nutrideias.mk2mind.top',
+                        queryParams: {
+                            // 👇 O SEGREDO: Força o Google a mostrar a seleção de conta
+                            // Isso evita o erro de redirecionamento "silencioso" no iPhone
+                            prompt: 'select_account',
+                            access_type: 'offline',
+                        }
+                    }
+                });
+                if (error) throw error;
+            } catch (error) {
+                mostrarToast("❌ Erro ao logar com Google", 'erro');
+                console.error('Google login error:', error);
+                if (btn) {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            }
         }
 
         // ==========================================
@@ -563,7 +679,7 @@
 
         async function carregarPerfilManual(event) {
             if (!usuarioLogado) {
-                alert("Você precisa estar logado para puxar seus dados.");
+                mostrarToast("🔐 Faça login para puxar seus dados", 'aviso');
                 return;
             }
 
@@ -582,7 +698,8 @@
                     .maybeSingle(); 
 
                 if (error) {
-                    alert("Erro ao puxar dados: " + error.message);
+                    mostrarToast("❌ Erro ao carregar dados", 'erro');
+                    console.error('Load profile error:', error);
                 } else if (data) {
                     // Preenche a tela
                     if(data.sexo) document.getElementById('sexo').value = data.sexo;
@@ -593,13 +710,13 @@
                     
                     window.usuarioIsPro = data.is_pro === true; // Define a variável global para verificar se o usuário é PRO 
                     
-                    alert("✅ Seus dados foram carregados com sucesso!");
+                    mostrarToast("✅ Dados carregados com sucesso!", 'sucesso');
                 } else {
-                    alert("Você ainda não tem um perfil salvo. Preencha os dados e clique em SALVAR.");
+                    mostrarToast("📝 Nenhum perfil salvo ainda", 'aviso');
                 }
             } catch (err) {
                 console.error("Erro na leitura: ", err);
-                alert("Erro de conexão ao tentar ler o banco de dados.");
+                mostrarToast("🌐 Erro de conexão", 'erro');
             } finally {
                 // Volta o botão ao normal
                 btn.innerHTML = textoOriginal;
@@ -608,7 +725,10 @@
         }
 
         async function salvarPerfilManual(event) {
-            if (!usuarioLogado) return;
+            if (!usuarioLogado) {
+                mostrarToast("🔐 Faça login para salvar dados", 'aviso');
+                return;
+            }
 
             // Muda o botão para "girando" para o usuário ver que está salvando
             const btn = event.currentTarget;
@@ -641,9 +761,10 @@
 
             // Avisa o usuário do resultado
             if (error) {
-                alert("Erro ao salvar: " + error.message);
+                mostrarToast("❌ Erro ao salvar: " + error.message, 'erro');
+                console.error('Save profile error:', error);
             } else {
-                alert("✅ Dados salvos com sucesso! Suas próximas refeições já usarão este perfil atualizado.");
+                mostrarToast("✅ Perfil salvo! Próximas refeições usarão esses dados.", 'sucesso');
             }
         }
 
@@ -683,7 +804,7 @@
             const restricoes = document.getElementById('restricoes').value;
             
             if (!ingredientesGeladeira) {
-                alert("Por favor, informe o que você tem na geladeira!");
+                mostrarToast("❌ Digite seus ingredientes!", 'aviso');
                 return;
             }
 
@@ -714,11 +835,14 @@
                 
                 if (data.receita) {
                     conteudo.innerHTML = data.receita;
+                    mostrarToast("✅ Receita pronta!", 'sucesso');
                 } else {
                     throw new Error(data.error || "Erro desconhecido no servidor.");
                 }
             } catch (error) {
-                conteudo.innerHTML = `<p class="text-red-500 font-bold">Erro ao gerar: ${error.message}</p>`;
+                mostrarToast("❌ Erro ao gerar receita", 'erro');
+                conteudo.innerHTML = `<p class="text-red-500 font-bold">⚠️ Tente novamente</p>`;
+                console.error('Generate recipe error:', error);
             } finally {
                 loading.classList.add('hidden');
                 btn.innerHTML = '<span class="font-bold text-sm"><i class="fas fa-utensils mr-1"></i> RECEITA ÚNICA</span><span class="text-[10px] font-normal opacity-80 mt-1">O que tem na geladeira</span>';
@@ -748,7 +872,7 @@
             const restricoes = document.getElementById('restricoes').value;
 
             if (!ingredientesGeladeira && !ingredientesPreferencias) {
-                alert("Para o plano da semana, preencha o que tem na geladeira ou suas preferências!");
+                mostrarToast("📝 Preencha ingredientes ou preferências!", 'aviso');
                 return;
             }
 
@@ -792,11 +916,14 @@
                         </div>
                         ${data.plano}
                     `;
+                    mostrarToast("✅ Plano semanal pronto!", 'sucesso');
                 } else {
                     throw new Error(data.error || "Erro ao processar o plano.");
                 }
             } catch (error) {
-                conteudo.innerHTML = `<p class="text-red-500 font-bold">Erro: ${error.message}</p>`;
+                mostrarToast("❌ Erro ao gerar plano", 'erro');
+                conteudo.innerHTML = `<p class="text-red-500 font-bold">⚠️ Tente novamente</p>`;
+                console.error('Generate plan error:', error);
             } finally {
                 loading.classList.add('hidden');
                 btn.innerHTML = '<span class="font-bold text-sm"><i class="fas fa-calendar-alt mr-1"></i> PLANO 7 DIAS</span><span class="text-[10px] font-normal opacity-80 mt-1">Cardápio + Lista de Compras</span>';
@@ -829,11 +956,12 @@
             };
 
             html2pdf().set(opt).from(elemento).save().then(() => {
+                mostrarToast("✅ PDF gerado com sucesso!", 'sucesso');
                 btn.innerHTML = textoOriginal;
                 btn.disabled = false;
             }).catch(err => {
                 console.error("Erro no PDF:", err);
-                alert("Erro ao gerar PDF. Tente abrir no Chrome ou Safari externo.");
+                mostrarToast("❌ Erro ao gerar PDF", 'erro');
                 btn.innerHTML = textoOriginal;
                 btn.disabled = false;
             });
@@ -846,7 +974,10 @@
 
         // Registra o Service Worker
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js').catch(err => console.error("Erro no SW:", err));
+            navigator.serviceWorker.register('sw.js').catch(err => {
+                console.error("Erro ao registrar Service Worker:", err);
+                mostrarToast("⚠️ App funcionará apenas online", 'aviso');
+            });
         }
 
         // Detecta Android/Chrome e libera o botão de Instalar
