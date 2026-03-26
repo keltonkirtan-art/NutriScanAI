@@ -175,9 +175,9 @@
         }
 
         // ============================================
-        // TESTAR PDF - VERSÃO COMPLETA
+        // TESTAR PDF - VERSÃO SÍNCRONA E SIMPLES
         // ============================================
-        async function testarPDF() {
+        function testarPDF() {
             const elemento = document.getElementById('conteudo-receita');
             
             if (elemento.classList.contains('hidden')) {
@@ -185,104 +185,92 @@
                 return;
             }
 
-            log('🚀 Iniciando geração de PDF (versão robusta)...', 'info');
+            log('🚀 Iniciando geração de PDF (SÍNCRONA)...', 'info');
 
             try {
-                // Verificar html2pdf
                 if (typeof html2pdf === 'undefined') {
-                    log('❌ html2pdf não carregado. Recarregue a página.', 'error');
+                    log('❌ html2pdf não carregado', 'error');
                     return;
                 }
-                log('✅ html2pdf encontrado', 'success');
 
-                // Criar wrapper
+                log('📦 Verificando conteúdo...', 'info');
+                const conteudo = elemento.innerHTML;
+                if (!conteudo || conteudo.trim().length === 0) {
+                    log('❌ Conteúdo vazio!', 'error');
+                    return;
+                }
+                log(`✅ Conteúdo presente: ${conteudo.length} caracteres`, 'success');
+
+                // Criar wrapper simples sem Tailwind, apenas com posicionamento
                 const wrapper = document.createElement('div');
+                wrapper.id = 'pdf-wrapper-temp';
+                wrapper.innerHTML = conteudo;
+                
+                // Estilos simples para o PDF
+                wrapper.style.width = '100%';
                 wrapper.style.backgroundColor = '#ffffff';
                 wrapper.style.padding = '20px';
+                wrapper.style.lineHeight = '1.6';
                 wrapper.style.fontFamily = 'Arial, sans-serif';
+                wrapper.style.fontSize = '12px';
+                wrapper.style.color = '#000000';
                 
-                const clone = elemento.cloneNode(true);
-                clone.classList.remove('hidden');
-                wrapper.appendChild(clone);
+                // Posicionar fora da tela mas visível
+                wrapper.style.position = 'fixed';
+                wrapper.style.left = '-10000px';
+                wrapper.style.top = '0';
+                wrapper.style.visibility = 'visible';
                 
-                log('✅ Elemento clonado com sucesso', 'success');
-                log(`📏 Altura do wrapper: ${wrapper.scrollHeight}px`, 'info');
+                document.body.appendChild(wrapper);
+                log('✅ Wrapper criado e inserido no DOM', 'success');
 
-                // Configuração
-                const config = {
-                    margin: [10, 10, 10, 10],
-                    filename: 'teste-receita.pdf',
-                    image: { type: 'jpeg', quality: 0.98 },
-                    html2canvas: {
-                        scale: 2.5,
-                        useCORS: true,
-                        logging: true,
-                        backgroundColor: '#ffffff',
-                        allowTaint: true,
-                        removeContainer: true,
-                        letterSpacing: 0,
-                        windowHeight: wrapper.scrollHeight + 100
-                    },
-                    jsPDF: {
-                        unit: 'mm',
-                        format: 'a4',
-                        orientation: 'portrait',
-                        compress: true
-                    }
-                };
-
-                log('⚙️ Configuração definida', 'info');
-                log('📊 Escala: 2.5x | Formato: JPEG | Qualidade: 98%', 'info');
-
-                // Gerar PDF
-                const pdf = html2pdf()
-                    .set(config)
-                    .from(wrapper);
-
-                log('⏳ Renderer em progresso...', 'info');
+                // Forçar repaint
+                wrapper.offsetHeight;
                 
-                await pdf
-                    .toPdf()
-                    .get('pdf')
-                    .then((pdfObj) => {
-                        const pages = pdfObj.internal.pages.length;
-                        log(`✅ PDF renderizado com sucesso: ${pages} página(s)`, 'success');
-                        return pdfObj;
+                log('⚙️ Configuração mínima: PNG, scale 1.5', 'info');
+                log('⏳ Renderizando HTML para canvas...', 'info');
+
+                // Usar html2pdf de forma síncrona (sem async/await)
+                html2pdf()
+                    .set({
+                        margin: 10,
+                        filename: 'teste-receita.pdf',
+                        image: { type: 'png', quality: 0.98 },
+                        html2canvas: {
+                            scale: 1.5,
+                            useCORS: true,
+                            backgroundColor: '#ffffff',
+                            logging: true
+                        },
+                        jsPDF: {
+                            unit: 'mm',
+                            format: 'a4',
+                            orientation: 'portrait'
+                        }
                     })
-                    .then((pdfObj) => {
-                        pdfObj.save();
-                        log('💾 PDF baixado com sucesso!', 'success');
+                    .from(wrapper)
+                    .save()
+                    .then(() => {
+                        log('✅ PDF salvo com sucesso!', 'success');
+                        document.body.removeChild(wrapper);
+                        log('🧹 Wrapper removido', 'info');
+                    })
+                    .catch((error) => {
+                        log(`❌ Erro ao gerar: ${error.message}`, 'error');
+                        document.body.removeChild(wrapper);
+                        testarPDFSimples();
                     });
 
             } catch (error) {
-                log(`❌ ERRO: ${error.message}`, 'error');
-                log(`📍 Stack: ${error.stack}`, 'error');
-                log('🔄 Tentando fallback simples...', 'warning');
-                
-                // Fallback
-                try {
-                    await html2pdf()
-                        .set({
-                            margin: 10,
-                            filename: 'teste-receita-fallback.pdf',
-                            image: { type: 'png', quality: 0.98 },
-                            html2canvas: { scale: 2 },
-                            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-                        })
-                        .from(document.getElementById('conteudo-receita'))
-                        .save();
-                    
-                    log('✅ Fallback bem-sucedido! PDF gerado com configuração alternativa', 'success');
-                } catch (fallbackError) {
-                    log(`❌ Fallback also failed: ${fallbackError.message}`, 'error');
-                }
+                log(`❌ ERRO CRÍTICO: ${error.message}`, 'error');
+                log(`Stack: ${error.stack}`, 'error');
             }
         }
 
         // ============================================
-        // TESTAR PDF - VERSÃO SIMPLIFICADA
+        // TESTAR PDF SIMPLES - VERSÃO SÍNCRONA
         // ============================================
-        async function testarPDFSimples() {
+        function testarPDFSimples() {
             const elemento = document.getElementById('conteudo-receita');
             
             if (elemento.classList.contains('hidden')) {
@@ -290,7 +278,7 @@
                 return;
             }
 
-            log('🚀 Iniciando geração de PDF (versão simplificada)...', 'info');
+            log('🚀 PDF Simples (versão minimal)...', 'info');
 
             try {
                 if (typeof html2pdf === 'undefined') {
@@ -298,25 +286,32 @@
                     return;
                 }
 
-                const config = {
-                    margin: 10,
-                    filename: 'teste-simples.pdf',
-                    image: { type: 'png', quality: 0.98 },
-                    html2canvas: { scale: 2, backgroundColor: '#ffffff' },
-                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-                };
-
-                log('⏳ Gerando PDF com configuração mínima...', 'info');
+                // Simples - usar elemento diretamente
+                log('⏳ Renderizando (scale 1)...', 'info');
                 
-                await html2pdf()
-                    .set(config)
+                html2pdf()
+                    .set({
+                        margin: 10,
+                        filename: 'teste-simples.pdf',
+                        image: { type: 'png', quality: 0.98 },
+                        html2canvas: { 
+                            scale: 1, 
+                            backgroundColor: '#ffffff',
+                            logging: true
+                        },
+                        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                    })
                     .from(elemento)
-                    .save();
-
-                log('✅ PDF gerado e baixado com sucesso!', 'success');
+                    .save()
+                    .then(() => {
+                        log('✅ PDF simples gerado!', 'success');
+                    })
+                    .catch((error) => {
+                        log(`❌ Erro: ${error.message}`, 'error');
+                    });
 
             } catch (error) {
-                log(`❌ ERRO: ${error.message}`, 'error');
+                log(`❌ ERRO CRÍTICO: ${error.message}`, 'error');
             }
         }
     </script>

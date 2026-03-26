@@ -679,16 +679,14 @@
             }
         }
 
-        // ==========================================
-        // LOGIN COM GOOGLE (COM FORÇA DE REDIRECIONAMENTO)
-        // ==========================================
         async function loginComGoogle() {
-            // Seleciona o botão para dar feedback visual
-            const btn = document.querySelector('button[onclick="loginComGoogle()"]');
-            const originalText = btn.innerHTML;
+            const btn = event ? event.currentTarget : document.querySelector('button[onclick="loginComGoogle()"]');
+            const originalText = btn ? btn.innerHTML : '';
             
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> CONECTANDO...';
-            btn.disabled = true;
+            if (btn) {
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> CONECTANDO...';
+                btn.disabled = true;
+            }
 
             try {
                 const { error } = await clienteSupabase.auth.signInWithOAuth({
@@ -705,26 +703,12 @@
                 });
                 if (error) throw error;
             } catch (error) {
-                alert("Erro ao logar com Google: " + error.message);
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-            }
-        }
-
-        // ==========================================
-        // LOGOUT COMPLETO (RESET DE PWA)
-        // ==========================================
-        async function deslogar() {
-            try {
-                const { error } = await clienteSupabase.auth.signOut();
-                if (error) throw error;
-
-                // 🔄 IMPORTANTE PARA PWA NO IPHONE: 
-                // Ao deslogar, forçamos um reload total da página. 
-                // Isso limpa qualquer estado "preso" na memória do Safari dentro do PWA.
-                window.location.reload(); 
-            } catch (error) {
-                alert("Erro ao sair: " + error.message);
+                mostrarToast("❌ Erro ao logar com Google", 'erro');
+                console.error('Google login error:', error);
+                if (btn) {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
             }
         }
 
@@ -889,7 +873,7 @@
                 const data = await response.json();
                 
                 if (data.receita) {
-                    conteudo.innerHTML = (data.receita || '').replace(/^```[a-z]*\n?/i, '').replace(/\n?```$/g, '').trim();
+                    conteudo.innerHTML = data.receita;
                     mostrarToast("✅ Receita pronta!", 'sucesso');
                 } else {
                     throw new Error(data.error || "Erro desconhecido no servidor.");
@@ -985,143 +969,45 @@
                 btn.disabled = false;
             }
         }      
-        // 3. FUNÇÃO DE GERAR PDF - VERSÃO ROBUSTA COM DEBUG
-        async function baixarPDF() {
+       // 3. FUNÇÃO DE GERAR PDF (Blindada contra erro de sintaxe e tela em branco)
+        function baixarPDF() {
             const elemento = document.getElementById('conteudo-receita');
-            const btn = event.currentTarget;
-
-            // ============================================
-            // VALIDAÇÃO INICIAL
-            // ============================================
-            if (!elemento || !elemento.innerHTML.trim()) {
-                mostrarToast("❌ Nenhum conteúdo para gerar PDF.", 'erro');
-                return;
-            }
-
-            // Verificar se html2pdf está carregado
-            if (typeof html2pdf === 'undefined') {
-                mostrarToast("❌ Bibliotecas não carregadas. Recarregue a página.", 'erro');
-                return;
-            }
-
-            // ============================================
-            // PREPARAÇÃO
-            // ============================================
+            const btn = event.currentTarget; 
+            
             const textoOriginal = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> GERANDO...';
             btn.disabled = true;
 
-            // Cria um wrapper com espaçamento para melhor renderização
-            const wrapper = document.createElement('div');
-            wrapper.style.backgroundColor = '#ffffff';
-            wrapper.style.padding = '20px';
-            wrapper.style.fontFamily = 'Arial, sans-serif';
-            
-            // Clone o elemento para não afetar o DOM
-            const elementoClone = elemento.cloneNode(true);
-            wrapper.appendChild(elementoClone);
-
-            // ============================================
-            // CONFIGURAÇÃO OTIMIZADA
-            // ============================================
-            const config = {
+            const opt = {
                 margin: [10, 10, 10, 10],
-                filename: 'NutriDeias-Receita.pdf',
-                image: { 
-                    type: 'jpeg', 
-                    quality: 0.98 
-                },
-                html2canvas: {
-                    scale: 2.5,           // ✅ Aumentado para melhor qualidade
+                filename: 'NutriScan-Plano.pdf',
+                image: { type: 'png', quality: 1 },
+                html2canvas: { 
+                    scale: 1,  // Sem zoom - renderização 1:1
                     useCORS: true,
                     logging: false,
                     backgroundColor: '#ffffff',
                     allowTaint: true,
-                    removeContainer: true,
-                    letterSpacing: 0,
-                    windowHeight: wrapper.scrollHeight + 100  // ✅ Usa altura real do wrapper
+                    removeContainer: true
                 },
-                jsPDF: {
-                    unit: 'mm',
-                    format: 'a4',
-                    orientation: 'portrait',
-                    compress: true
-                }
+                jsPDF: { 
+                    unit: 'mm', 
+                    format: 'a4', 
+                    orientation: 'portrait'
+                },
+                pagebreak: { mode: ['css'] }
             };
 
-            try {
-                console.log('📄 Iniciando geração de PDF...');
-                console.log('Conteúdo:', elementoClone.innerHTML.substring(0, 100) + '...');
-                console.log('Config:', config);
-
-                // Tenta gerar o PDF
-                const pdf = html2pdf()
-                    .set(config)
-                    .from(wrapper)
-                    .toPdf()
-                    .get('pdf')
-                    .then((pdf) => {
-                        const pages = pdf.internal.pages.length;
-                        console.log(`✅ PDF gerado com ${pages} página(s)`);
-                        return pdf;
-                    });
-
-                await pdf.save();
-
+            html2pdf().set(opt).from(elemento).save().then(() => {
                 mostrarToast("✅ PDF gerado com sucesso!", 'sucesso');
-                console.log('✅ PDF salvo com sucesso');
-
-            } catch (error) {
-                console.error("❌ Erro na geração de PDF:", error);
-                console.error("Stack:", error.stack);
-
-                // ============================================
-                // FALLBACK 1: Tentar com configuração simplificada
-                // ============================================
-                try {
-                    console.log('🔄 Tentando fallback com configuração simplificada...');
-                    
-                    const configSimples = {
-                        margin: 10,
-                        filename: 'NutriDeias-Receita.pdf',
-                        image: { type: 'png', quality: 0.98 },
-                        html2canvas: { scale: 2 },
-                        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-                    };
-
-                    await html2pdf().set(configSimples).from(wrapper).save();
-                    mostrarToast("✅ PDF gerado com configuração alternativa!", 'sucesso');
-                    console.log('✅ Fallback bem-sucedido');
-
-                } catch (fallbackError) {
-                    console.error("❌ Fallback falhou também:", fallbackError);
-                    
-                    // ============================================
-                    // FALLBACK 2: Abrir impressão (último recurso)
-                    // ============================================
-                    mostrarToast("⚠️ Abrindo impressão do navegador...", 'aviso');
-                    console.log('🖨️ Abrindo print dialog');
-                    
-                    // Cria uma janela com o conteúdo para impressão
-                    const printWindow = window.open('', '', 'height=400,width=600');
-                    printWindow.document.write('<html><head><title>Imprimir Receita</title></head><body>');
-                    printWindow.document.write(wrapper.innerHTML);
-                    printWindow.document.write('</body></html>');
-                    printWindow.document.close();
-                    
-                    setTimeout(() => {
-                        printWindow.print();
-                        printWindow.close();
-                    }, 250);
-                }
-
-            } finally {
-                // ============================================
-                // RESTAURAR BOTÃO
-                // ============================================
                 btn.innerHTML = textoOriginal;
                 btn.disabled = false;
-            }
+            }).catch(err => {
+                console.error("Erro no PDF:", err);
+                mostrarToast("❌ Erro ao gerar PDF. Tente novamente.", 'erro');
+                btn.innerHTML = textoOriginal;
+                btn.disabled = false;
+            });
         }
 
         // Registra o Service Worker
