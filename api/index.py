@@ -7,7 +7,10 @@ load_dotenv()
 app = Flask(__name__, template_folder="../templates", static_folder="../static")
 
 # Configuração do novo Cliente Google GenAI
-client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
+client = genai.Client(
+    api_key=os.environ.get("GEMINI_API_KEY"),
+    http_options={'api_version': 'v1alpha'} # Útil para modelos preview
+)
 
 def limpar_resposta_ia(texto):
     """Remove markdown code fences da resposta da IA"""
@@ -108,10 +111,14 @@ def gerar():
                 </div>
            </div>
         """
-        
+        config = {
+            "temperature": 0.7,  # Criatividade equilibrada para receitas
+            "top_p": 0.95,
+        }
         response = client.models.generate_content(
             model="gemini-3.1-flash-lite-preview", 
             contents=prompt
+            config=config # Adicionando a config aqui
         )
         return jsonify({"receita": limpar_resposta_ia(response.text)})
     except Exception as e:
@@ -183,10 +190,15 @@ def gerar_semanal():
            Para cada item use: <li class='flex items-center mb-2'><input type='checkbox' class='mr-3 w-5 h-5'><span>Item</span></li>
            </div>
         """
+        config = {
+            "temperature": 0.7,  # Criatividade equilibrada para receitas
+            "top_p": 0.95,
+        }
             
         response = client.models.generate_content(
             model="gemini-3.1-flash-lite-preview", 
             contents=prompt
+            config=config # Adicionando a config aqui
         )
      
         return jsonify({"plano": limpar_resposta_ia(response.text)})
